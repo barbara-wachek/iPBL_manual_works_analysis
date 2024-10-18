@@ -56,15 +56,15 @@ links_of_finished_servies = new_df['LINK'].tolist()
 
 
 # all_finished_servies_df = pd.DataFrame()
-all_tabels = []
+all_tables = []
 for link in tqdm(links_of_finished_servies):
     gsheetId = re.search(r'(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\-\d\_]*', link).group(0)
-    all_tabels.append(gsheet_to_df(gsheetId, worksheet='Posts'))
+    all_tables.append(gsheet_to_df(gsheetId, worksheet='Posts'))
     
 
-all_finished_servies_df = pd.concat(all_tables)
+all_finished_servies_df = pd.concat(all_tables) #Chyba nie zadziała, bo niektore kolumny maja inne nazwy (poczytac)
 
-
+#Kolejne kroki: wyciagnac z df tylko kolumny Link, Autor i VIAF (autor 1, autor 2 itd.)
 
 
 
