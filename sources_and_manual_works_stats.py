@@ -51,32 +51,63 @@ drive = GoogleDrive(gauth)
 
 
 
+dokumentacja_prace_manualne_df = gsheet_to_df('1jCjEaopxsezprUiauuYkwQcG1cp40NqdhvxIzG5qUu8', 'dokumentacja')
+dokumentacja_prace_manualne_df = dokumentacja_prace_manualne_df.loc[dokumentacja_prace_manualne_df['NAZWA'].notna()]    #Wyrzucenie pustych wierszy 
+dokumentacja_prace_manualne_df = dokumentacja_prace_manualne_df.rename(columns={'NAZWA':'LINK DO STRONY'}) 
 
 
-dokumentacja_df = gsheet_to_df('1jCjEaopxsezprUiauuYkwQcG1cp40NqdhvxIzG5qUu8', 'dokumentacja')
-df_only_manual = dokumentacja_df.loc[dokumentacja_df['CZY DO PRAC MANUALNYCH (PO ZMIANACH)'] == 'TAK'] 
+dokumentacja_web_scraping_df = gsheet_to_df('1-g_pgkvRIhBSKBENu_5HhRCMsHatv-eux3U_ERGHZG0', 'Raport')
+
+
+merged_df = pd.merge(dokumentacja_prace_manualne_df, dokumentacja_web_scraping_df, on='LINK DO STRONY', how='left')
+merged_df.columns
+
+final_df = merged_df.drop(columns=['CZY DO MANUALNYCH PRAC? (WG ZAŁĄCZNIKA DO PROJEKTU)', 'DZIEDZINA', 'uwagi do manualnych prac', 'OSOBA OPRACOWUJĄCA', 'data utworzenia',  'web scraping do poprawki', 'Unnamed: 13', 'KTO ROBI?', 'NAZWA PLIKU', 'PLIK XLSX', 'PLIK JSON',  'AKTYWNY?', 'DODATKI', 'UWAGI', 'LINK DO KODU', 'CZY DO MANUALNYCH PRAC?', 'Unnamed: 14', 'CZY DO OPRAC. MANUALNEGO? [UWZGLĘDNIONE ZMIANY]', 'REKORDY'])
 
 
 
+final_df_only_manual = final_df.loc[(final_df['CZY DO PRAC MANUALNYCH (PO ZMIANACH)'] == 'TAK')] 
+final_df_only_manual = final_df_only_manual.loc[(final_df['CZY POZYSKANO?'] != 'REZYGNACJA')] 
+
+# next(final_df_only_manual.iterrows())
 
 
+final_df_only_manual['CZY POZYSKANO?'].value_counts() #66 zeskrobanych, 25 do zeskrobania (sposród tych do prac manualnych)
 
 
-
-new_df = dokumentacja_df.loc[dokumentacja_df['STATUS PRAC'] == 'zakończono'] 
-links_of_finished_servies = new_df['LINK'].tolist()
-
-
-# all_finished_servies_df = pd.DataFrame()
-all_tables = []
-for link in tqdm(links_of_finished_servies):
-    gsheetId = re.search(r'(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\-\d\_]*', link).group(0)
-    all_tables.append(gsheet_to_df(gsheetId, worksheet='Posts'))
+for index, row in tqdm(final_df_only_manual.iterrows()):
+    
+    link = row['LINK'] 
+    try:
+        gsheetId = re.search('(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
+        table_df = gsheet_to_df(gsheetId, 'Posts')
+        true_counts = table_df['do PBL'].value_counts()['True']
+        row['REKORDY ZAAKCEPTOWANE'] = true_counts
+    except (KeyError, TypeError):
+        row['REKORDY ZAAKCEPTOWANE'] = None
     
 
-all_finished_servies_df = pd.concat(all_tables) #Chyba nie zadziała, bo niektore kolumny maja inne nazwy (poczytac)
+#Po kilku wierszach wyskoczył JSONDecodeError: Expecting value (Po culture.pl) Aict problem: niby link usuniety...
 
-#Kolejne kroki: wyciagnac z df tylko kolumny Link, Autor i VIAF (autor 1, autor 2 itd.)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
