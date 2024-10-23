@@ -67,20 +67,20 @@ def update_zakres_lat_w_zrodle(df):
     for index, row in tqdm(df.iterrows()):  
         try:
             link = row['LINK']
+            # link = 'https://docs.google.com/spreadsheets/d/1x3B02W8PuIsq83HknVwpFnFRUrQQTZvzVLFmNndKJgw/edit?gid=652340147#gid=652340147'
             if not pd.isna(link):  # Check if 'LINK' is not null
                 gsheetId = re.search('(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
                 table_df = gsheet_to_df(gsheetId, 'Posts')
 
-                # Extract years using a more robust approach (consider edge cases)
                 years_list = table_df['Data publikacji'].dropna().tolist()
                 if years_list:
                     first_year = min(years_list)
                     last_year = max(years_list)
-                    df.at[index, 'ZAKRES LAT W ŹRÓDLE'] = f"{first_year}|{last_year}"  # Efficient formatting
+                    df.at[index, 'ZAKRES LAT W ŹRÓDLE'] = f"{first_year}|{last_year}"  
                 else:
-                    df.at[index, 'ZAKRES LAT W ŹRÓDLE'] = None  # Set 'TEST' to None if no years found
+                    df.at[index, 'ZAKRES LAT W ŹRÓDLE'] = None  
         except (KeyError, TypeError):
-            df.at[index, 'ZAKRES LAT W ŹRÓDLE'] = None  # Handle errors gracefully
+            df.at[index, 'ZAKRES LAT W ŹRÓDLE'] = None  
         except:
             df.at[index, 'ZAKRES LAT W ŹRÓDLE'] = 'Do uzupełnienia ręcznie'
 
