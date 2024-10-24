@@ -188,11 +188,12 @@ print('Zeskrobane serwisy: ' + str(final_df['CZY POZYSKANO?'].value_counts()['TA
 print('Zeskrobane serwisy (tylko do oprac. manualnego): ' + str(final_df_only_manual['CZY POZYSKANO?'].value_counts()['TAK']))
 
 
-
 print('PRACE MANUALNE')
 print('Zakończono opracowanie: ' + str(final_df['STATUS PRAC'].value_counts()['zakończono']))        
 print('Rozpoczęto opracowanie: ' + str(final_df['STATUS PRAC'].value_counts()['rozpoczęto']))
 print('Przerwano opracowanie: ' + str(final_df['STATUS PRAC'].value_counts()['przerwano']))
+
+
 print('Gotowe do przydzielenia: ' + str(final_df_only_manual.loc[(final_df_only_manual['czy_przekazano_do_manual'] == 'tak') & (final_df_only_manual['OSOBA OPRACOWUJĄCA'].isna())].shape[0]))
 
 print('Opracowane rekordy: ' + str(final_df_only_manual['REKORDY ZAAKCEPTOWANE'].replace(to_replace='None', value=np.nan).dropna().sum())) #Trochę więcej. Sprawdzić ze statystykami
