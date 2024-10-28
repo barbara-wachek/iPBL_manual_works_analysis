@@ -173,11 +173,6 @@ update_zakres_lat_oprac_rekordow(final_df_only_manual)
 
 
 
-# final_df_only_manual['REKORDY POZYSKANE'] = final_df_only_manual['REKORDY POZYSKANE'].str.replace('\D', '', regex=True)
-# final_df_only_manual['REKORDY ZAAKCEPTOWANE'] = final_df_only_manual['REKORDY ZAAKCEPTOWANE'].str.replace('\D', '', regex=True)
-
-
-
 #%% RAPORT ZBIORCZY (OGÓLNY i OPRAC. MANUALNE)
 print('RAPORT z dnia ' + str(datetime.today().date()))
 print("Liczba wszystkich serwisów: " + str(final_df.shape[0]) + ' (w tym niedostępne)')
@@ -187,6 +182,13 @@ print("Liczba serwisów do oprac. automatycznego: " + str(final_df_only_automati
 print('Zeskrobane serwisy: ' + str(final_df['CZY POZYSKANO?'].value_counts()['TAK']))                     
 print('Zeskrobane serwisy (tylko do oprac. manualnego): ' + str(final_df_only_manual['CZY POZYSKANO?'].value_counts()['TAK']))
 
+#Checking raport
+
+if final_df_only_manual.shape[0] + final_df_only_automatic.shape[0] == final_df_only_available_sources.shape[0]:
+    print("Wszystko się zgadza")
+else: 
+    print("UWAGA! BŁĄD! Suma źródeł do oprac. automatycznego i manualnego nie zgadza się z sumą wszystkich źródeł. Do sprawdzenia w tabelach")
+    
 
 print('PRACE MANUALNE')
 print('Zakończono opracowanie: ' + str(final_df['STATUS PRAC'].value_counts()['zakończono']))        
@@ -194,7 +196,9 @@ print('Rozpoczęto opracowanie: ' + str(final_df['STATUS PRAC'].value_counts()['
 print('Przerwano opracowanie: ' + str(final_df['STATUS PRAC'].value_counts()['przerwano']))
 
 
-print('Gotowe do przydzielenia: ' + str(final_df_only_manual.loc[(final_df_only_manual['czy_przekazano_do_manual'] == 'tak') & (final_df_only_manual['OSOBA OPRACOWUJĄCA'].isna())].shape[0]))
+
+#W poniższych sa błedy. do zbadania
+print('Gotowe do przydzielenia: ' + str(final_df_only_manual.loc[(final_df_only_manual['czy_przekazano_do_manual'] == 'tak') & (final_df_only_manual['KTO'].isna())].shape[0]))
 
 print('Opracowane rekordy: ' + str(final_df_only_manual['REKORDY ZAAKCEPTOWANE'].replace(to_replace='None', value=np.nan).dropna().sum())) #Trochę więcej. Sprawdzić ze statystykami
 
@@ -209,10 +213,6 @@ print('Opracowane rekordy: ' + str(final_df_only_manual['REKORDY ZAAKCEPTOWANE']
 #ZAPISZ RAPORT w jakim formacie i wyslij do arkusza
 
 
-#Checking raport
-
-if final_df_only_manual.shape[0] + final_df_only_automatic.shape[0] == final_df_only_available_sources.shape[0]:
-    print("Wszystko się zgadza")
 
 
 
