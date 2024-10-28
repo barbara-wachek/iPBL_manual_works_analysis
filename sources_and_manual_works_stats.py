@@ -9,7 +9,10 @@ from pydrive.drive import GoogleDrive
 from gspread_dataframe import set_with_dataframe, get_as_dataframe
 import regex as re
 import numpy as np
+import requests
 
+from oauth2client.service_account import ServiceAccountCredentials
+import time
 #%% connect google drive
 
 #autoryzacja do tworzenia i edycji plików
@@ -28,87 +31,134 @@ def gsheet_to_df(gsheetId, worksheet):
     return df
 
 
-def update_rekordy_pozyskane(df):
-    for index, row in tqdm(df.iterrows()):  
-        try:
-            link = row['LINK']
-            # if not pd.isna(link):  # Check if 'LINK' is not null
-                # link = 'https://docs.google.com/spreadsheets/d/1zOxDVFLvk2ovJEyyKp-Zpw6Vqdqr3WG-nueOLy5cVs4/edit#gid=652340147'
-                # link = None
-                # link = 'https://docs.google.com/spreadsheets/d/1ynR57xAatPRKayLn1ZhQ6s3uP_lXSTria0GtlkuH6TY/edit?gid=652340147#gid=652340147'
-            gsheetId = re.search('(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
-            table_df = gsheet_to_df(gsheetId, 'Posts')
-            all_extracted_records = table_df['Link'].dropna().shape[0]
-            df.at[index, 'REKORDY POZYSKANE'] = all_extracted_records
-          
-            # else:
-            #     df.at[index, 'REKORDY POZYSKANE'] = 'None'
-       
-        except (KeyError, TypeError):  
-            df.at[index, 'REKORDY POZYSKANE'] = None
-        except:
-            df.at[index, 'REKORDY POZYSKANE'] = "JAKIŚ BŁĄD" 
-
-    return df 
-
-
-def update_rekordy_zaakceptowane(df):
-    for index, row in tqdm(df.iterrows()):  
-        try:
-            link = row['LINK']
-            # if not pd.isna(link):  # Check if 'LINK' is not null
-            # link = 'https://docs.google.com/spreadsheets/d/1zOxDVFLvk2ovJEyyKp-Zpw6Vqdqr3WG-nueOLy5cVs4/edit#gid=652340147'
-            # link = 'https://docs.google.com/spreadsheets/d/1L0hm5yZPYfI5vxtTfRX2y4yEMl-ARyL2_nmplo88uw8/edit?gid=652340147#gid=652340147'
-            # # link = 'https://docs.google.com/spreadsheets/d/1W4jGEOW7YfbJZw9qTFHb65vxMbrlyb02XwJnpvx8BLs/edit#gid=652340147'
-            # link = 'https://docs.google.com/spreadsheets/d/1sjuv58WQwG3vfq7ikaRiUQxOVaF4tbu_XTgWhmamslU/edit?gid=652340147#gid=652340147' #krytyczynym
-            # link = 'https://docs.google.com/spreadsheets/d/1L0hm5yZPYfI5vxtTfRX2y4yEMl-ARyL2_nmplo88uw8/edit?gid=652340147#gid=652340147' #poczytajdziecku
-            # link = 'https://docs.google.com/spreadsheets/d/1rIN84s4N_5cQPcxIa343Smls8HH9tvObE4wT3B24iSw/edit#gid=652340147'
-            gsheetId = re.search('(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
-            table_df = gsheet_to_df(gsheetId, 'Posts')
-           
-            filtered_df = table_df[(table_df['do PBL'] == 'True') & (table_df["Link"].notna())]
-            accepted_records = len(filtered_df['Link'].tolist())
-            df.at[index, 'REKORDY ZAAKCEPTOWANE'] = accepted_records
-                    
-            # else:
-            #     df.at[index, 'REKORDY ZAAKCEPTOWANE'] = 'None'  
-       
-        except (KeyError, TypeError):
-            df.at[index, 'REKORDY ZAAKCEPTOWANE'] = 'None'
-        except:
-            df.at[index, 'REKORDY ZAAKCEPTOWANE'] = "DO UZUPEŁNIENIA RĘCZNIE?" 
-
-    return df 
-
-
-
-
-def update_zakres_lat_w_zrodle(df):
-    for index, row in tqdm(df.iterrows()):  
-        try:
-            link = row['LINK']
-            if not pd.isna(link):  
-                # link = 'https://docs.google.com/spreadsheets/d/1T6JHJxlZJtAhUpYNS37CTbRmRN5Q4-_YYD6GXa2MADc'
+def update_rekordy_pozyskane(df, max_retries=3, backoff_factor=2):
+    for index, row in tqdm(df.iterrows()):
+        link = row['LINK']
+        retries = 0
+        while retries < max_retries:
+            try:
                 gsheetId = re.search('(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
                 table_df = gsheet_to_df(gsheetId, 'Posts')
+                all_extracted_records = table_df['Link'].dropna().shape[0]
+                df.at[index, 'REKORDY POZYSKANE'] = all_extracted_records
+                break  # Wyjdź z pętli, jeśli pobranie danych się powiodło
+            except requests.exceptions.RequestException as e:
+                print(f"Błąd podczas pobierania danych dla wiersza {index}: {e}")
+                retries += 1
+                # Wykładniczy backoff: zwiększaj czas oczekiwania po każdej próbie
+                wait_time = backoff_factor ** retries
+                time.sleep(wait_time)
+            except Exception as e:
+                df.at[index, 'REKORDY POZYSKANE'] = 0
+                break
+        else:  # Jeśli pętla się wyczerpała
+            df.at[index, 'REKORDY POZYSKANE'] = "Błąd po wielu próbach"
 
-                years_list = table_df['Data publikacji'].dropna().tolist()
-                if years_list != []:
-                    first_year = min(years_list)
-                    last_year = max(years_list)
-                    df.at[index, 'ZAKRES LAT W ŹRÓDLE'] = f"{first_year}|{last_year}"  
-                else:
-                    df.at[index, 'ZAKRES LAT W ŹRÓDLE'] = None  
-        except (KeyError, TypeError):
-            df.at[index, 'ZAKRES LAT W ŹRÓDLE'] = 'BRAK DATY PUBLIKACJI'  
-        except:
-            df.at[index, 'ZAKRES LAT W ŹRÓDLE'] = 'Do sprawdzenia'
+    return df
+
+
+def update_rekordy_zaakceptowane(df, max_retries=3, backoff_factor=2):
+    for index, row in tqdm(df.iterrows()):
+        link = row['LINK']
+        retries = 0
+        while retries < max_retries:
+            try:
+                gsheetId = re.search('(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
+                table_df = gsheet_to_df(gsheetId, 'Posts')
+                filtered_df = table_df[(table_df['do PBL'] == 'True') & (table_df["Link"].notna())]
+                accepted_records = len(filtered_df['Link'].tolist())
+                df.at[index, 'REKORDY ZAAKCEPTOWANE'] = accepted_records
+                break  # Wyjdź z pętli, jeśli pobranie danych się powiodło
+            except requests.exceptions.RequestException as e:
+                print(f"Błąd połączenia dla wiersza {index}: {e}")
+                retries += 1
+                # Wykładniczy backoff: zwiększaj czas oczekiwania po każdej próbie
+                wait_time = backoff_factor ** retries
+                time.sleep(wait_time)
+            except Exception as e:
+                df.at[index, 'REKORDY ZAAKCEPTOWANE'] = 0
+                break
+        else:  # Jeśli pętla się wyczerpała
+            df.at[index, 'REKORDY ZAAKCEPTOWANE'] = "Błąd po wielu próbach"
 
     return df
 
 
 
-def update_zakres_lat_oprac_rekordow(df):
+def update_zakres_dat_w_zrodle(df):
+    for index, row in tqdm(df.iterrows()):  
+        try:
+            link = row['LINK']
+            if not pd.isna(link):  
+                gsheetId = re.search('(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
+                table_df = gsheet_to_df(gsheetId, 'Posts')
+
+                dates_list = table_df['Data publikacji'].dropna().tolist()
+                if dates_list != []:
+                    first_date = min(dates_list)
+                    last_date = max(dates_list)
+                    df.at[index, 'ZAKRES DAT W ŹRÓDLE'] = f"{first_date}|{last_date}"  
+                else:
+                    df.at[index, 'ZAKRES DAT W ŹRÓDLE'] = None  
+            else:
+                df.at[index, 'ZAKRES DAT W ŹRÓDLE'] = "BRAK PRZYGOTOWANEJ TABELI"
+        except (KeyError, TypeError):
+            df.at[index, 'ZAKRES DAT W ŹRÓDLE'] = 'BRAK DATY PUBLIKACJI'  
+        except:
+            df.at[index, 'ZAKRES DAT W ŹRÓDLE'] = 'Do sprawdzenia'
+
+    return df
+
+
+#GEMINI
+
+# def update_zakres_dat_w_zrodle(df, max_retries=3, backoff_factor=2):
+#     """
+#     Aktualizuje zakres dat w źródle dla każdego wiersza DataFrame, obsługując błędy połączenia.
+
+#     Args:
+#         df (pandas.DataFrame): DataFrame do aktualizacji.
+#         max_retries (int, optional): Maksymalna liczba prób pobrania danych.
+#         backoff_factor (int, optional): Współczynnik wykładniczego zwiększania czasu oczekiwania między próbami.
+
+#     Returns:
+#         pandas.DataFrame: Zaktualizowany DataFrame.
+#     """
+
+#     for index, row in tqdm(df.iterrows()):
+#         link = row['LINK']
+#         retries = 0
+#         while retries < max_retries:
+#             try:
+#                 gsheetId = re.search('(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
+#                 table_df = gsheet_to_df(gsheetId, 'Posts')
+
+#                 dates_list = table_df['Data publikacji'].dropna().tolist()
+#                 if dates_list:
+#                     first_date = min(dates_list)
+#                     last_date = max(dates_list)
+#                     df.at[index, 'ZAKRES DAT W ŹRÓDLE'] = f"{first_date}|{last_date}"
+#                 else:
+#                     df.at[index, 'ZAKRES DAT W ŹRÓDLE'] = 'Brak daty publikacji'
+#                 break
+#             except requests.exceptions.RequestException as e:
+#                 print(f"Błąd połączenia dla wiersza {index}: {e}")
+#                 retries += 1
+#                 wait_time = backoff_factor ** retries
+#                 time.sleep(wait_time)
+#             except Exception as e:
+#                 df.at[index, 'ZAKRES DAT W ŹRÓDLE'] = 'Błąd przetwarzania danych'
+#                 break
+#         else:
+#             df.at[index, 'ZAKRES DAT W ŹRÓDLE'] = "Błąd po wielu próbach"
+
+#     return df
+
+
+
+
+
+def update_zakres_dat_oprac_rekordow(df):
     for index, row in tqdm(df.iterrows()):  
         try:
             link = row['LINK']
@@ -166,10 +216,18 @@ final_df_only_manual = final_df_only_manual.reset_index(drop=True)
 
 #%%DataFrame ze statystykami z dodatkowymi kolumnami (na potrzeby machine learningu)
 #Uruchomienie funkcji do wzbogacenia danych dot. ilosci zeskrobanych i zaakceptowanych rekordow z poszczegolncyh serwisow + zakresu dat
+
 update_rekordy_pozyskane(final_df_only_manual)
-update_rekordy_zaakceptowane(final_df_only_manual)  #Nie liczy xksięgarni! link = 'https://docs.google.com/spreadsheets/d/1rIN84s4N_5cQPcxIa343Smls8HH9tvObE4wT3B24iSw/edit#gid=652340147
-update_zakres_lat_w_zrodle(final_df_only_manual)    
-update_zakres_lat_oprac_rekordow(final_df_only_manual)
+update_rekordy_zaakceptowane(final_df_only_manual)  
+
+
+final_df_only_manual['REKORDY POZYSKANE'].sum() #Zlivzy tylko te pozyskane do oprac manualnego 157137
+final_df_only_manual['REKORDY ZAAKCEPTOWANE'].sum() #16721  #17662  Nie wiem dlaczego ale rozne liczb7 za kazdym razem podaje
+
+
+#Funkcje ponizej raczej dzialaja poprawnie
+update_zakres_dat_w_zrodle(final_df_only_manual)    
+update_zakres_dat_oprac_rekordow(final_df_only_manual)
 
 
 
