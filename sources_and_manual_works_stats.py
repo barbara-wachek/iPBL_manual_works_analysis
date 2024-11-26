@@ -188,11 +188,15 @@ rekordy_pozyskane_tylko_manualne_na_podstawie_tabeli = final_df_only_manual['REK
     
 update_rekordy_zaakceptowane(final_df_only_manual)  
 
+
+
 extracted_not_assigned = final_df_only_manual.loc[(final_df_only_manual['REKORDY ZAAKCEPTOWANE'] == 0) & (final_df_only_manual['KTO'].isna()) & (final_df_only_manual['LINK DO ARKUSZA'].notna())] #Serwisy zeskrobane, ale jeszcze nieprzydzielone. Gotowe do przydzielenia
 extracted_and_assigned_not_processed = final_df_only_manual.loc[(final_df_only_manual['REKORDY ZAAKCEPTOWANE'] == 0) & (final_df_only_manual['KTO'].notna()) & (final_df_only_manual['LINK DO ARKUSZA'].notna())] #0 zaakceptowanych, ale przydzielone. Do sprawdzenia czy jeszcze nie rozpoczęły te osoby prac, czy moze czegos nie policzylo
 
 
-final_df_only_manual['REKORDY ZAAKCEPTOWANE'].sum() #16721  #17662  Nie wiem dlaczego ale rozne liczb7 za kazdym razem podaje 2024-10-29: 17692
+final_df_only_manual['REKORDY ZAAKCEPTOWANE'].sum()  
+#2024-10-29: 17692
+#2024-11-26: 18433
 
 
 #Funkcje ponizej raczej dzialaja poprawnie
