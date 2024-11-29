@@ -84,11 +84,12 @@ dokumentacja_prace_manualne_df_nie_rozpoczeto = dokumentacja_prace_manualne_df.l
 files_links = dokumentacja_prace_manualne_df_nie_rozpoczeto['LINK'].tolist()
 
 
+
+
+
 #%% Functions
 
-# for index, row in tqdm(dokumentacja_prace_manualne_df_nie_rozpoczeto.iterrows()):  
-#     try:
-#         link = row['LINK']
+# 
      
 
 def list_of_authors_from_table(link):
@@ -108,9 +109,10 @@ def list_of_authors_from_table(link):
             if re.search(r'\||\,', author):  # Sprawdzamy, czy autor zawiera '|' lub ','
                 authors = re.split(r'\||,', author)  # Dzielimy autorów
                 updated_authors.extend([a.strip() for a in authors])  # Dodajemy do nowej listy
+            elif len(author) > 40:   #Wyrzucenie błędnych danych (zamiast autora/autorów czasami pojawiają sie w tych polach długie teksty)
+                continue
             else:
                 updated_authors.append(author.strip())  # Dodajemy autora bez zmian
-
 
     updated_authors = list(set(updated_authors)) #Wyrzucenie duplikatów po splitowaniu
     return updated_authors
@@ -130,14 +132,87 @@ def dictionary_of_authors_and_viafs(author):
 
 #Dokończ poniższą funkcje, wg instrukcji poniżej
 #Update dataframe'u     
-#Pamietaz zeby wczesniej zrobic split komorki, zeby wychwycilo miejsca gdzie jest wielu autorow i potem kazdy element ma ponumerowac i poszukac viafu. potem na podstwie numerow ma te viafy w odpowiednią kolumnę dac czyli np. Adam Kowalski, Jan Nowak -> [Adam Kowalski, Jan Nowak] -> (1, Adam Kowalski, viaf), (2, Jan Nowak, viaf) -> umiecic viafy w odpowiednich kolumnach wg kolejnosci 
+#Pamietaj zeby wczesniej zrobic split komorki, zeby wychwycilo miejsca gdzie jest wielu autorow i potem kazdy element ma ponumerowac i poszukac viafu. potem na podstwie numerow ma te viafy w odpowiednią kolumnę dac czyli np. Adam Kowalski, Jan Nowak -> [Adam Kowalski, Jan Nowak] -> (1, Adam Kowalski, viaf), (2, Jan Nowak, viaf) -> umiecic viafy w odpowiednich kolumnach wg kolejnosci 
 
 
 
-def update_viaf_columns(link):  
-             
+def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsze powinna być kolumna Autor/z autorami artykułu   
+          
     gsheetId = re.search('(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
     table_df = gsheet_to_df(gsheetId, 'Posts')
+
+    # list_of_columns = ['Autor', 'Autor książki']
+    
+    for i, column in enumerate(list_of_columns):
+        #column = 'Autor książki'
+        df_column_list = [re.split(r'\||,', e) if isinstance(e, str) else None for e in table_df[column].tolist()]
+        
+        df_column_list_viafs = [[dictionary_of_authors.get(el) for el in e] if isinstance(e, list) else e for e in df_column_list]
+        for il, e in enumerate(df_column_list_viafs):
+
+            if e is not None and len(e) > 3:
+                e = e[:2]
+            elif e is not None and len(e) == 1:
+                e.extend([None, None]) 
+            elif e is not None and len(e) == 2:
+                e.append(None) 
+            elif e is not None and len(e) == 3: 
+                pass
+            else:
+                df_column_list_viafs[il] = [None, None, None]
+                
+            
+        
+        if i == 0: 
+            author_column_1 = [e[0] for e in df_column_list_viafs]
+            table_df['VIAF autor 1'] = author_column_1
+            
+            author_column_2 = [e[1] for e in df_column_list_viafs]
+            table_df['VIAF autor 2'] = author_column_2
+            
+            author_column_3 = [e[2] for e in df_column_list_viafs]
+            table_df['VIAF autor 3'] = author_column_3
+    
+        elif i == 1:
+            df_column_byt_1 = [e[0] for e in df_column_list_viafs]
+            table_df['zewnętrzny identyfikator bytu 1'] = df_column_byt_1
+            table_df['byt 1'] = table_df['zewnętrzny identyfikator bytu 1'].apply(lambda x: 'osoba' if x else None)
+            
+        elif i == 2: 
+            df_column_byt_2 = [e[1] for e in df_column_list_viafs]
+            table_df['zewnętrzny identyfikator bytu 2'] = df_column_byt_2
+            table_df['byt 2'] = table_df['zewnętrzny identyfikator bytu 2'].apply(lambda x: 'osoba' if x else None)
+            
+
+    return table_df
+
+
+
+
+
+
+
+
+
+#     for index, row in table_df.iterrows():  
+
+#         if isinstance(row['Autor'], str):
+
+#             authors = [e.strip() for e in re.split(r'\||,', row['Autor'])]  # Dzielimy autorów
+            
+#             for index_number, author in enumerate(authors, start=1):
+#                 if index_number <= 3:
+#                     column_name = f"VIAF autor {index_number}"
+                    
+#                     table_df.at[index, column_name] = dictionary_of_authors.get(author) 
+
+                   
+#     return table_df
+                
+
+
+# [e.strip() for e in re.split(r'\||,', 'barbarawachek')]
+
 
 
 
@@ -163,7 +238,19 @@ def update_viaf_columns(link):
             
 #%% main
 
-link = 'https://docs.google.com/spreadsheets/d/1sjuv58WQwG3vfq7ikaRiUQxOVaF4tbu_XTgWhmamslU/edit?gid=652340147#gid=652340147'
+#%% 4 tabele wybrane do testowania modelu językowego:
+
+krytycznym_okiem = 'https://docs.google.com/spreadsheets/d/1sjuv58WQwG3vfq7ikaRiUQxOVaF4tbu_XTgWhmamslU/edit?gid=652340147#gid=652340147'
+darska = 'https://docs.google.com/spreadsheets/d/1x3B02W8PuIsq83HknVwpFnFRUrQQTZvzVLFmNndKJgw/edit?gid=652340147#gid=652340147'
+szelest_kartek = 'https://docs.google.com/spreadsheets/d/1P6A2gwFaglFh4r9Vk9k21-QSDrFpPYAVfDIzRqgw1D4/edit?gid=652340147#gid=652340147'
+poczytajmi = 'https://docs.google.com/spreadsheets/d/1BoZyh226cX6t2nzoiLLiFB3RShNXjq4v-sGnAkQ8tJ8/edit?gid=652340147#gid=652340147'
+
+
+#Plik ppoczytajmi to wyczyszczenia
+
+link = 'https://docs.google.com/spreadsheets/d/1P6A2gwFaglFh4r9Vk9k21-QSDrFpPYAVfDIzRqgw1D4/edit?gid=652340147#gid=652340147'
+
+
 
 updated_authors = list_of_authors_from_table(link)                    
                     
@@ -171,8 +258,29 @@ dictionary_of_authors = {}
 with ThreadPoolExecutor() as excecutor:
     list(tqdm(excecutor.map(dictionary_of_authors_and_viafs, updated_authors),total=len(updated_authors)))                 
 
+
     
-update_viaf_columns(link)
+    
+df_darska = update_viaf_columns(link, ['Autor', 'Autor książki'])
+df_krytycznym = update_viaf_columns(link, ['Autor', 'Autor książki'])
+
+# df_poczytajmi = update_viaf_columns(link, ['Autor', 'Autor książki'])
+
+df_szelest_kartek = update_viaf_columns(link, ['Autor', 'Autor książki'])
+
+
+
+with pd.ExcelWriter(f"data\\viafowanie\\bernadetta_darska_2022-09-09.xlsx", engine='xlsxwriter') as writer:    
+    df_darska.to_excel(writer, 'Posts', index=False)   
+
+with pd.ExcelWriter(f"data\\viafowanie\\krytycznym_okiem_2024-10-04.xlsx", engine='xlsxwriter') as writer:    
+    df_krytycznym.to_excel(writer, 'Posts', index=False)   
+    
+with pd.ExcelWriter(f"data\\viafowanie\\szelest_kartek_2022-09-01.xlsx", engine='xlsxwriter') as writer:    
+    df_szelest_kartek.to_excel(writer, 'Posts', index=False)   
+
+#dopisz ręcznie viaf nasiriwiz : http://viaf.org/viaf/86147965902384082709
+
 
 
 
