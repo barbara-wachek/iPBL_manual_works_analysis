@@ -89,36 +89,37 @@ files_links = dokumentacja_prace_manualne_df_nie_rozpoczeto['LINK'].tolist()
 
 #%% Functions
 
-# 
-     
 
 def list_of_authors_from_table(link):
     
     # link = 'https://docs.google.com/spreadsheets/d/1sjuv58WQwG3vfq7ikaRiUQxOVaF4tbu_XTgWhmamslU/edit?gid=652340147#gid=652340147'   #krytycznym_okiem
     # link = 'https://docs.google.com/spreadsheets/d/1x3B02W8PuIsq83HknVwpFnFRUrQQTZvzVLFmNndKJgw/edit?gid=652340147#gid=652340147'    #darska
+    # link = 'https://docs.google.com/spreadsheets/d/1BoZyh226cX6t2nzoiLLiFB3RShNXjq4v-sGnAkQ8tJ8/edit?gid=652340147#gid=652340147'   #poczytajmi
 
     gsheetId = re.search('(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
     table_df = gsheet_to_df(gsheetId, 'Posts')
         
     list_of_unique_authors = list(set(table_df['Autor'].tolist())) + list(set(table_df['Autor książki'].tolist()))
+    list_of_unique_authors = [re.sub(r"\([^)]*\)", "", e) for e in list_of_unique_authors if isinstance(e, str)]
     updated_authors = []
     
     for author in list_of_unique_authors:
         # author = list_of_unique_authors[10]
         if isinstance(author, str) and author:
-            if re.search(r'\||\,', author):  # Sprawdzamy, czy autor zawiera '|' lub ','
-                authors = re.split(r'\||,', author)  # Dzielimy autorów
+            if re.search(r'\||\,|&|oraz|\/|\si\s ', author):  # Sprawdzamy, czy autor zawiera '|' lub ','
+                authors = re.split(r'\||\,|&|oraz|\/|\si\s ', author)  # Dzielimy autorów
                 updated_authors.extend([a.strip() for a in authors])  # Dodajemy do nowej listy
             elif len(author) > 40:   #Wyrzucenie błędnych danych (zamiast autora/autorów czasami pojawiają sie w tych polach długie teksty)
                 continue
             else:
                 updated_authors.append(author.strip())  # Dodajemy autora bez zmian
-
+                
     updated_authors = list(set(updated_authors)) #Wyrzucenie duplikatów po splitowaniu
+    updated_authors = [e for e in updated_authors if e] #Usunięcie pustych elementów
     return updated_authors
 
 
-#Utworzenia slownika, w ktorym kluczami sa nazwy autorow, a wartoscia ich viafy     
+# Utworzenia slownika, w ktorym kluczami sa nazwy autorow, a wartoscia ich viafy     
 def dictionary_of_authors_and_viafs(author):
     try:
         author_viaf = check_viaf_with_fuzzy_match2(author)
@@ -130,24 +131,28 @@ def dictionary_of_authors_and_viafs(author):
     return dictionary_of_authors
 
 
-#Dokończ poniższą funkcje, wg instrukcji poniżej
-#Update dataframe'u     
-#Pamietaj zeby wczesniej zrobic split komorki, zeby wychwycilo miejsca gdzie jest wielu autorow i potem kazdy element ma ponumerowac i poszukac viafu. potem na podstwie numerow ma te viafy w odpowiednią kolumnę dac czyli np. Adam Kowalski, Jan Nowak -> [Adam Kowalski, Jan Nowak] -> (1, Adam Kowalski, viaf), (2, Jan Nowak, viaf) -> umiecic viafy w odpowiednich kolumnach wg kolejnosci 
-
 
 
 def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsze powinna być kolumna Autor/z autorami artykułu   
-          
-    gsheetId = re.search('(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
+   
+    gsheetId = re.search(r'(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
     table_df = gsheet_to_df(gsheetId, 'Posts')
 
     # list_of_columns = ['Autor', 'Autor książki']
     
     for i, column in enumerate(list_of_columns):
-        #column = 'Autor książki'
-        df_column_list = [re.split(r'\||,', e) if isinstance(e, str) else None for e in table_df[column].tolist()]
+        # column = 'Autor książki'
         
-        df_column_list_viafs = [[dictionary_of_authors.get(el) for el in e] if isinstance(e, list) else e for e in df_column_list]
+        df_column_list = [re.sub(r"\([^)]*\)", "", e) if isinstance(e, str) else e for e in table_df[column].tolist()] 
+        
+        df_column_list = [re.split(r'\||\,|&|oraz|\/|\si\s ', e) if isinstance(e, str) else None for e in df_column_list]
+        
+        
+        # df_column_list = [re.split(r'\||,', e) if isinstance(e, str) else None for e in table_df[column].tolist()]
+        
+        df_column_list_viafs = [[dictionary_of_authors.get(el.strip()) for el in e] if isinstance(e, list) else e for e in df_column_list]
+        
+        
         for il, e in enumerate(df_column_list_viafs):
 
             if e is not None and len(e) > 3:
@@ -188,54 +193,8 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 
 
 
-
-
-
-
-
-
-#     for index, row in table_df.iterrows():  
-
-#         if isinstance(row['Autor'], str):
-
-#             authors = [e.strip() for e in re.split(r'\||,', row['Autor'])]  # Dzielimy autorów
             
-#             for index_number, author in enumerate(authors, start=1):
-#                 if index_number <= 3:
-#                     column_name = f"VIAF autor {index_number}"
-                    
-#                     table_df.at[index, column_name] = dictionary_of_authors.get(author) 
-
-                   
-#     return table_df
-                
-
-
-# [e.strip() for e in re.split(r'\||,', 'barbarawachek')]
-
-
-
-
-    # for k,v in dictionary_of_authors.items():
-    #     if re.search(r'\||', k): 
-    #         new_values_list = k.split('|')
-    #     if re.search(r'\,', k): 
-    #         new_values_list = k.split(',')
-      
-
-    #     if row['Autor'] in dictionary_of_authors.keys():
-    #         table_df.at[index, 'VIAF autor 1'] = dictionary_of_authors.get(row['Autor'])
-                        
-            
-    # for index, row in tqdm(table_df.iterrows()):    
-            
-            
-            
-            
-    """
-    Kolejny krok: Przesłanie zaktualizowanego DF na dysk google? Nadpisanie? Skonsultuj
-    """
-            
+        
 #%% main
 
 #%% 4 tabele wybrane do testowania modelu językowego:
@@ -246,14 +205,21 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 
 
 poczytajmi = 'https://docs.google.com/spreadsheets/d/1BoZyh226cX6t2nzoiLLiFB3RShNXjq4v-sGnAkQ8tJ8/edit?gid=652340147#gid=652340147'
+    
 
 
 
-#Plik ppoczytajmi to wyczyszczenia!
-#Tabele na dysku w kolumnie do PBL maja False zamiast tego takiego kwadracika
 
-link = 'https://docs.google.com/spreadsheets/d/1P6A2gwFaglFh4r9Vk9k21-QSDrFpPYAVfDIzRqgw1D4/edit?gid=652340147#gid=652340147'
 
+poczytajmi = 'https://docs.google.com/spreadsheets/d/1BoZyh226cX6t2nzoiLLiFB3RShNXjq4v-sGnAkQ8tJ8/edit?gid=652340147#gid=652340147'
+
+#!!! Plik ppoczytajmi to wyczyszczenia!
+#!!! Tabele na dysku w kolumnie do PBL maja False zamiast tego takiego kwadracika
+
+
+
+
+link = 'https://docs.google.com/spreadsheets/d/1BoZyh226cX6t2nzoiLLiFB3RShNXjq4v-sGnAkQ8tJ8/edit?gid=652340147#gid=652340147'
 
 
 updated_authors = list_of_authors_from_table(link)                    
@@ -262,8 +228,6 @@ dictionary_of_authors = {}
 with ThreadPoolExecutor() as excecutor:
     list(tqdm(excecutor.map(dictionary_of_authors_and_viafs, updated_authors),total=len(updated_authors)))                 
 
-
-    
     
 df_darska = update_viaf_columns(link, ['Autor', 'Autor książki'])
 df_krytycznym = update_viaf_columns(link, ['Autor', 'Autor książki'])
@@ -271,6 +235,8 @@ df_krytycznym = update_viaf_columns(link, ['Autor', 'Autor książki'])
 # df_poczytajmi = update_viaf_columns(link, ['Autor', 'Autor książki'])
 
 df_szelest_kartek = update_viaf_columns(link, ['Autor', 'Autor książki'])
+
+df_poczytajmi = update_viaf_columns(link, ['Autor', 'Autor książki'])
 
 
 
@@ -282,6 +248,11 @@ with pd.ExcelWriter(f"data\\viafowanie\\krytycznym_okiem_2024-10-04.xlsx", engin
     
 with pd.ExcelWriter(f"data\\viafowanie\\szelest_kartek_2022-09-01.xlsx", engine='xlsxwriter') as writer:    
     df_szelest_kartek.to_excel(writer, 'Posts', index=False)   
+
+
+with pd.ExcelWriter(f"data\\viafowanie\\poczytajmi_blog_2024-10-18.xlsx", engine='xlsxwriter') as writer:    
+    df_poczytajmi.to_excel(writer, 'Posts', index=False)   
+
 
 #dopisz ręcznie viaf nasiriwiz : http://viaf.org/viaf/86147965902384082709
 
