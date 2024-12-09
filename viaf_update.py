@@ -92,17 +92,19 @@ files_links = dokumentacja_prace_manualne_df_nie_rozpoczeto['LINK'].tolist()
 
 def list_of_authors_from_table(link):
     
-    # link = 'https://docs.google.com/spreadsheets/d/1sjuv58WQwG3vfq7ikaRiUQxOVaF4tbu_XTgWhmamslU/edit?gid=652340147#gid=652340147'   #krytycznym_okiem
-    # link = 'https://docs.google.com/spreadsheets/d/1x3B02W8PuIsq83HknVwpFnFRUrQQTZvzVLFmNndKJgw/edit?gid=652340147#gid=652340147'    #darska
-    # link = 'https://docs.google.com/spreadsheets/d/1BoZyh226cX6t2nzoiLLiFB3RShNXjq4v-sGnAkQ8tJ8/edit?gid=652340147#gid=652340147'   #poczytajmi
+    # link = 'https://docs.google.com/spreadsheets/d/1YbfqA_1EIx7KOGJD3PelK-TBLavg7N_oGoja1tv__Zs/edit?gid=652340147#gid=652340147'  #krytycznym_okiem
 
-    gsheetId = re.search('(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
+    gsheetId = re.search(r'(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
     table_df = gsheet_to_df(gsheetId, 'Posts')
-        
-    list_of_unique_authors = list(set(table_df['Autor'].tolist())) + list(set(table_df['Autor książki'].tolist()))
-    list_of_unique_authors = [re.sub(r"\([^)]*\)", "", e) for e in list_of_unique_authors if isinstance(e, str)]
-    updated_authors = []
     
+    try:    
+        list_of_unique_authors = list(set(table_df['Autor'].tolist())) + list(set(table_df['Autor książki'].tolist()))
+        list_of_unique_authors = [re.sub(r"\([^)]*\)", "", e) for e in list_of_unique_authors if isinstance(e, str)]
+    except KeyError:    #Gdy nie ma kolumny 'Autor książki'
+        list_of_unique_authors = set(table_df['Autor'].tolist())
+        
+    updated_authors = []
+
     for author in list_of_unique_authors:
         # author = list_of_unique_authors[10]
         if isinstance(author, str) and author:
@@ -116,6 +118,8 @@ def list_of_authors_from_table(link):
                 
     updated_authors = list(set(updated_authors)) #Wyrzucenie duplikatów po splitowaniu
     updated_authors = [e for e in updated_authors if e] #Usunięcie pustych elementów
+    updated_authors = [re.sub(r'([\p{L}]*:)(.*)', r'\2', e).strip() if re.search(r'[\p{L}]*:', e) else e for e in updated_authors]    #dla zamek_czyta
+    
     return updated_authors
 
 
@@ -197,64 +201,52 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
         
 #%% main
 
-#%% 4 tabele wybrane do testowania modelu językowego:
+#%% Wykomentowane zmienne to linki do już uzupełnionych o viafy tabel
 
+# Done: 
 # krytycznym_okiem = 'https://docs.google.com/spreadsheets/d/1sjuv58WQwG3vfq7ikaRiUQxOVaF4tbu_XTgWhmamslU/edit?gid=652340147#gid=652340147'
 # darska = 'https://docs.google.com/spreadsheets/d/1x3B02W8PuIsq83HknVwpFnFRUrQQTZvzVLFmNndKJgw/edit?gid=652340147#gid=652340147'
 # szelest_kartek = 'https://docs.google.com/spreadsheets/d/1P6A2gwFaglFh4r9Vk9k21-QSDrFpPYAVfDIzRqgw1D4/edit?gid=652340147#gid=652340147'
-
-
-poczytajmi = 'https://docs.google.com/spreadsheets/d/1BoZyh226cX6t2nzoiLLiFB3RShNXjq4v-sGnAkQ8tJ8/edit?gid=652340147#gid=652340147'
-    
-
-
-
-
-
-poczytajmi = 'https://docs.google.com/spreadsheets/d/1BoZyh226cX6t2nzoiLLiFB3RShNXjq4v-sGnAkQ8tJ8/edit?gid=652340147#gid=652340147'
-
-#!!! Plik ppoczytajmi to wyczyszczenia!
-#!!! Tabele na dysku w kolumnie do PBL maja False zamiast tego takiego kwadracika
+# poczytajmi = 'https://docs.google.com/spreadsheets/d/1BoZyh226cX6t2nzoiLLiFB3RShNXjq4v-sGnAkQ8tJ8/edit?gid=652340147#gid=652340147'   
+# zamek_czyta = 'https://docs.google.com/spreadsheets/d/1YbfqA_1EIx7KOGJD3PelK-TBLavg7N_oGoja1tv__Zs/edit?gid=652340147#gid=652340147'
+# god_save_the_book = 'https://docs.google.com/spreadsheets/d/1pNQos-vdEeTmz-kN3wQu2h9dDHUxS0Qp8-oy1ACJqRg/edit?gid=652340147#gid=652340147'
+# giedrys = 'https://docs.google.com/spreadsheets/d/1pIqWc1d5xAjgcIcNY_Hzj6ffIutD8tKnEguczB9mtuA/edit?gid=652340147#gid=652340147'
+# kulturaliberalna = 'https://docs.google.com/spreadsheets/d/1qxVX3LVPnDr5fUliLzCIyu-QruZu3-_aIIlb-HGVHX0/edit?gid=652340147#gid=652340147'
+# o_poezji = 'https://docs.google.com/spreadsheets/d/1jn7Ev88NR6NSbCGNacqvl2LfDdVYqanI-rb7CRgbEE0/edit?gid=652340147#gid=652340147'
 
 
 
 
-link = 'https://docs.google.com/spreadsheets/d/1BoZyh226cX6t2nzoiLLiFB3RShNXjq4v-sGnAkQ8tJ8/edit?gid=652340147#gid=652340147'
 
-
+link = 'https://docs.google.com/spreadsheets/d/1jn7Ev88NR6NSbCGNacqvl2LfDdVYqanI-rb7CRgbEE0/edit?gid=652340147#gid=652340147'
 updated_authors = list_of_authors_from_table(link)                    
                     
 dictionary_of_authors = {}
 with ThreadPoolExecutor() as excecutor:
     list(tqdm(excecutor.map(dictionary_of_authors_and_viafs, updated_authors),total=len(updated_authors)))                 
 
-    
-df_darska = update_viaf_columns(link, ['Autor', 'Autor książki'])
-df_krytycznym = update_viaf_columns(link, ['Autor', 'Autor książki'])
 
+
+#%% Tworzenie dataframe. Pamiętać, żeby wpisać nazwy kolumn z df    
 # df_poczytajmi = update_viaf_columns(link, ['Autor', 'Autor książki'])
 
-df_szelest_kartek = update_viaf_columns(link, ['Autor', 'Autor książki'])
-
-df_poczytajmi = update_viaf_columns(link, ['Autor', 'Autor książki'])
 
 
 
-with pd.ExcelWriter(f"data\\viafowanie\\bernadetta_darska_2022-09-09.xlsx", engine='xlsxwriter') as writer:    
-    df_darska.to_excel(writer, 'Posts', index=False)   
+df_o_poezji = update_viaf_columns(link, ['Autor'])
 
-with pd.ExcelWriter(f"data\\viafowanie\\krytycznym_okiem_2024-10-04.xlsx", engine='xlsxwriter') as writer:    
-    df_krytycznym.to_excel(writer, 'Posts', index=False)   
-    
-with pd.ExcelWriter(f"data\\viafowanie\\szelest_kartek_2022-09-01.xlsx", engine='xlsxwriter') as writer:    
-    df_szelest_kartek.to_excel(writer, 'Posts', index=False)   
+with pd.ExcelWriter(f"data\\viafowanie\\o-poezji_2024-10-01.xlsx", engine='xlsxwriter') as writer:    
+    df_o_poezji.to_excel(writer, 'Posts', index=False)   
 
 
-with pd.ExcelWriter(f"data\\viafowanie\\poczytajmi_blog_2024-10-18.xlsx", engine='xlsxwriter') as writer:    
-    df_poczytajmi.to_excel(writer, 'Posts', index=False)   
+#Done: 
+
+# with pd.ExcelWriter(f"data\\viafowanie\\zamek_czyta_2022-12-20.xlsx", engine='xlsxwriter') as writer:    
+     # df_zamek_czyta.to_excel(writer, 'Posts', index=False)   
 
 
-#dopisz ręcznie viaf nasiriwiz : http://viaf.org/viaf/86147965902384082709
+
+
 
 
 
