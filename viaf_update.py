@@ -80,8 +80,10 @@ dokumentacja_prace_manualne_df = dokumentacja_prace_manualne_df.loc[dokumentacja
 dokumentacja_prace_manualne_df_nie_rozpoczeto = dokumentacja_prace_manualne_df.loc[(dokumentacja_prace_manualne_df['STATUS PRAC'] == "nie rozpoczęto") | (dokumentacja_prace_manualne_df['STATUS PRAC'] == "False")]
 
 
+dokumentacja_prace_manualne_df_nie_rozpoczeto_brak_viafowania = dokumentacja_prace_manualne_df_nie_rozpoczeto.loc[dokumentacja_prace_manualne_df_nie_rozpoczeto['uwagi'] != 'viafowanie']
+
 '''Stworzenie listy linków do tabel, których opracowanie nie zostało jeszcze rozpoczęte''' #2024-11-26: 18 tabel
-files_links = dokumentacja_prace_manualne_df_nie_rozpoczeto['LINK'].tolist()
+files_links = dokumentacja_prace_manualne_df_nie_rozpoczeto_brak_viafowania['LINK'].tolist()
 
 
 
@@ -91,8 +93,6 @@ files_links = dokumentacja_prace_manualne_df_nie_rozpoczeto['LINK'].tolist()
 
 
 def list_of_authors_from_table(link):
-    
-    # link = 'https://docs.google.com/spreadsheets/d/1YbfqA_1EIx7KOGJD3PelK-TBLavg7N_oGoja1tv__Zs/edit?gid=652340147#gid=652340147'  #krytycznym_okiem
 
     gsheetId = re.search(r'(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
     table_df = gsheet_to_df(gsheetId, 'Posts')
@@ -119,6 +119,10 @@ def list_of_authors_from_table(link):
     updated_authors = list(set(updated_authors)) #Wyrzucenie duplikatów po splitowaniu
     updated_authors = [e for e in updated_authors if e] #Usunięcie pustych elementów
     updated_authors = [re.sub(r'([\p{L}]*:)(.*)', r'\2', e).strip() if re.search(r'[\p{L}]*:', e) else e for e in updated_authors]    #dla zamek_czyta
+    updated_authors = [re.sub(r'^(.*?)(\s*[\u2014].*)?$', r'\1', e).strip() if re.search(r'\s[\u2014]\s', e) else e for e in updated_authors]    #dla musisieukazac
+
+    
+    updated_authors = [re.sub(r'(\p{L}+)(\p{Lu})', r'\1 \2', e) for e in updated_authors]    #dla poczytajdziecku
     
     return updated_authors
 
@@ -213,12 +217,14 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 # giedrys = 'https://docs.google.com/spreadsheets/d/1pIqWc1d5xAjgcIcNY_Hzj6ffIutD8tKnEguczB9mtuA/edit?gid=652340147#gid=652340147'
 # kulturaliberalna = 'https://docs.google.com/spreadsheets/d/1qxVX3LVPnDr5fUliLzCIyu-QruZu3-_aIIlb-HGVHX0/edit?gid=652340147#gid=652340147'
 # o_poezji = 'https://docs.google.com/spreadsheets/d/1jn7Ev88NR6NSbCGNacqvl2LfDdVYqanI-rb7CRgbEE0/edit?gid=652340147#gid=652340147'
+# poledwumiesiecznik = 'https://docs.google.com/spreadsheets/d/1zaNhC9b186MO7935fjVceAUW8aCvUfwPa742Rh-9EGI/edit?gid=652340147#gid=652340147'
+# stoner_polski = 'https://docs.google.com/spreadsheets/d/1Qkjeq5CxY-CJQ7fiAIvRGLzVUX0wDjs4mpYHr-QnHlQ/edit?gid=652340147#gid=652340147'
+# pelna_sala = 'https://docs.google.com/spreadsheets/d/1_TVR3TJEvPgN6I3_wmqlqVzq9FtUAYtcQWIYAl0MAW4/edit?gid=652340147#gid=652340147'
+# poczytaj_dziecku = 'https://docs.google.com/spreadsheets/d/1L0hm5yZPYfI5vxtTfRX2y4yEMl-ARyL2_nmplo88uw8/edit?gid=652340147#gid=652340147'
+# musi_sie_ukazac = 'https://docs.google.com/spreadsheets/d/1hnQvR-GJ1BmqMU-QXhkaXeVSMiZFsSdv0HM8QM0NPY8/edit?gid=652340147#gid=652340147'  Zrobione, ale jakies malo viafow i raczej blednie przypisane, wiec nie uzupelnilam tabeli na dysku
 
 
-
-
-
-link = 'https://docs.google.com/spreadsheets/d/1jn7Ev88NR6NSbCGNacqvl2LfDdVYqanI-rb7CRgbEE0/edit?gid=652340147#gid=652340147'
+link = 'https://docs.google.com/spreadsheets/d/1hnQvR-GJ1BmqMU-QXhkaXeVSMiZFsSdv0HM8QM0NPY8/edit?gid=652340147#gid=652340147'
 updated_authors = list_of_authors_from_table(link)                    
                     
 dictionary_of_authors = {}
@@ -231,18 +237,12 @@ with ThreadPoolExecutor() as excecutor:
 # df_poczytajmi = update_viaf_columns(link, ['Autor', 'Autor książki'])
 
 
+df = update_viaf_columns(link, ['Autor'])
 
+with pd.ExcelWriter(f"data\\viafowanie\\musisieukazac_2023-10-31.xlsx", engine='xlsxwriter') as writer:    
+    df.to_excel(writer, 'Posts', index=False)   
 
-df_o_poezji = update_viaf_columns(link, ['Autor'])
-
-with pd.ExcelWriter(f"data\\viafowanie\\o-poezji_2024-10-01.xlsx", engine='xlsxwriter') as writer:    
-    df_o_poezji.to_excel(writer, 'Posts', index=False)   
-
-
-#Done: 
-
-# with pd.ExcelWriter(f"data\\viafowanie\\zamek_czyta_2022-12-20.xlsx", engine='xlsxwriter') as writer:    
-     # df_zamek_czyta.to_excel(writer, 'Posts', index=False)   
+   
 
 
 
