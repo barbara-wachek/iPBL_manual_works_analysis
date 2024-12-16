@@ -223,8 +223,15 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 # poczytaj_dziecku = 'https://docs.google.com/spreadsheets/d/1L0hm5yZPYfI5vxtTfRX2y4yEMl-ARyL2_nmplo88uw8/edit?gid=652340147#gid=652340147'
 # musi_sie_ukazac = 'https://docs.google.com/spreadsheets/d/1hnQvR-GJ1BmqMU-QXhkaXeVSMiZFsSdv0HM8QM0NPY8/edit?gid=652340147#gid=652340147'  Zrobione, ale jakies malo viafow i raczej blednie przypisane, wiec nie uzupelnilam tabeli na dysku
 # moja_przestrzen_kultury = 'https://docs.google.com/spreadsheets/d/1aIpcIbhcTEwRgmCmAAKgrNJ4IjLEEDUyhNcJeE3R-oo/edit?gid=652340147#gid=652340147'
+#rue_bout_du_monde = 'https://docs.google.com/spreadsheets/d/1bg5uSkpNpWK--8tjK3w0vG-vt6q7Ul09n8imGRTNJUU/edit#gid=652340147' - kod sobie nie poradził. Nie zrównało Radka Kobierskiego z Radosławem Kobierskim
+#w_cieniu_skrzydel = 'https://docs.google.com/spreadsheets/d/10OTdaRwg7y1oxvJU9FFzV-J5MVbgYF3h47BC9LBv9PI'
 
-link = 'https://docs.google.com/spreadsheets/d/1aIpcIbhcTEwRgmCmAAKgrNJ4IjLEEDUyhNcJeE3R-oo/edit?gid=652340147#gid=652340147'
+
+#NIE ROBIĆ: 
+#rozdzielczosc_chleba - brak autorów
+
+
+link = 'https://docs.google.com/spreadsheets/d/10OTdaRwg7y1oxvJU9FFzV-J5MVbgYF3h47BC9LBv9PI'
 updated_authors = list_of_authors_from_table(link)                    
                     
 dictionary_of_authors = {}
@@ -234,7 +241,7 @@ with ThreadPoolExecutor() as excecutor:
 
 
 #%% Tworzenie dataframe. Pamiętać, żeby wpisać nazwy kolumn z df    
-# df_poczytajmi = update_viaf_columns(link, ['Autor', 'Autor książki'])
+# update_viaf_columns(link, ['Autor', 'Autor książki']) - zawsze uwzględniac nazwy kolumn!
 
 
 df = update_viaf_columns(link, ['Autor'])
