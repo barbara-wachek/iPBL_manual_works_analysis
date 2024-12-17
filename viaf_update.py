@@ -226,12 +226,15 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 #rue_bout_du_monde = 'https://docs.google.com/spreadsheets/d/1bg5uSkpNpWK--8tjK3w0vG-vt6q7Ul09n8imGRTNJUU/edit#gid=652340147' - kod sobie nie poradził. Nie zrównało Radka Kobierskiego z Radosławem Kobierskim
 #w_cieniu_skrzydel = 'https://docs.google.com/spreadsheets/d/10OTdaRwg7y1oxvJU9FFzV-J5MVbgYF3h47BC9LBv9PI'
 #kontent = 'https://docs.google.com/spreadsheets/d/1OYnWnxUCEZyOp4JNdR06WMWb-08fBJQfzp-MUX3A2CA/edit?gid=652340147#gid=652340147'
+# helikopter = 'https://docs.google.com/spreadsheets/d/1zCd2Q1orjawLtE7pvNTHFph2FvCGzb0ooWclCCV8RMI/edit?gid=652340147#gid=652340147'
+
+
 
 #NIE ROBIĆ: 
 #rozdzielczosc_chleba - brak autorów
 
 
-link = 'https://docs.google.com/spreadsheets/d/1OYnWnxUCEZyOp4JNdR06WMWb-08fBJQfzp-MUX3A2CA/edit?gid=652340147#gid=652340147'
+link = 'https://docs.google.com/spreadsheets/d/1zCd2Q1orjawLtE7pvNTHFph2FvCGzb0ooWclCCV8RMI/edit?gid=652340147#gid=652340147'
 updated_authors = list_of_authors_from_table(link)                    
                     
 dictionary_of_authors = {}
@@ -246,7 +249,7 @@ with ThreadPoolExecutor() as excecutor:
 
 df = update_viaf_columns(link, ['Autor'])
 
-with pd.ExcelWriter(r"data\\viafowanie\\kontent_2024-12-16.xlsx", engine='xlsxwriter') as writer:    
+with pd.ExcelWriter(r"data\\viafowanie\\helikopter_2024-12-16.xlsx", engine='xlsxwriter') as writer:    
     df.to_excel(writer, 'Posts', index=False)   
 
    
