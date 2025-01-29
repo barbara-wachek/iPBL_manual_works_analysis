@@ -155,7 +155,7 @@ merged_df = pd.merge(dokumentacja_prace_manualne_df, dokumentacja_web_scraping_d
 merged_df.columns   #Podgląd nazw kolumn, aby wybrać zbędne do wyrzucenia
 
 
-final_df = merged_df.drop(columns=['CZY DO MANUALNYCH PRAC? (WG ZAŁĄCZNIKA DO PROJEKTU)', 'DZIEDZINA', 'uwagi do manualnych prac', 'data utworzenia',  'web scraping do poprawki', 'Unnamed: 13', 'KTO ROBI?', 'NAZWA PLIKU', 'PLIK XLSX', 'PLIK JSON',  'AKTYWNY?', 'DODATKI', 'UWAGI', 'LINK DO KODU', 'CZY DO MANUALNYCH PRAC?', 'Unnamed: 14', 'CZY DO OPRAC. MANUALNEGO? [UWZGLĘDNIONE ZMIANY]', 'REKORDY'])
+final_df = merged_df.drop(columns=['CZY DO MANUALNYCH PRAC? (WG ZAŁĄCZNIKA DO PROJEKTU)', 'DZIEDZINA', 'uwagi do manualnych prac', 'data utworzenia',  'web scraping do poprawki', 'Unnamed: 14', 'KTO ROBI?', 'NAZWA PLIKU', 'PLIK XLSX', 'PLIK JSON',  'AKTYWNY?', 'DODATKI', 'UWAGI', 'LINK DO KODU', 'CZY DO MANUALNYCH PRAC?', 'Unnamed: 14', 'CZY DO OPRAC. MANUALNEGO? [UWZGLĘDNIONE ZMIANY]', 'REKORDY'])
 
 final_df_only_available_sources = final_df.loc[(final_df['CZY POZYSKANO?'] != 'REZYGNACJA') & (final_df['CZY POZYSKANO?'] != 'NIEDOSTĘPNA')]
 
@@ -197,6 +197,7 @@ extracted_and_assigned_not_processed = final_df_only_manual.loc[(final_df_only_m
 final_df_only_manual['REKORDY ZAAKCEPTOWANE'].sum()  
 #2024-10-29: 17692
 #2024-11-26: 18433
+#2025-01-27: 20262
 
 
 #Funkcje ponizej raczej dzialaja poprawnie
