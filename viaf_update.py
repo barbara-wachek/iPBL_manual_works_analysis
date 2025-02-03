@@ -29,9 +29,9 @@ from fuzzywuzzy import fuzz
 import re
 
 from concurrent.futures import ThreadPoolExecutor
-from tqdm import tqdm
+from tqdm import tqdm 
 from datetime import datetime
-# from gspread.exceptions import WorksheetNotFound
+from gspread.exceptions import WorksheetNotFound
 import pandas as pd
 import gspread as gs
 from pydrive.auth import GoogleAuth
@@ -130,6 +130,7 @@ def list_of_authors_from_table(link):
 # Utworzenia slownika, w ktorym kluczami sa nazwy autorow, a wartoscia ich viafy     
 def dictionary_of_authors_and_viafs(author):
     try:
+        # author = 'Piotr Gaszczyński'
         author_viaf = check_viaf_with_fuzzy_match2(author)
         dictionary_of_authors[author] = author_viaf[0][0]
     except TypeError: 
@@ -227,14 +228,16 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 #w_cieniu_skrzydel = 'https://docs.google.com/spreadsheets/d/10OTdaRwg7y1oxvJU9FFzV-J5MVbgYF3h47BC9LBv9PI'
 #kontent = 'https://docs.google.com/spreadsheets/d/1OYnWnxUCEZyOp4JNdR06WMWb-08fBJQfzp-MUX3A2CA/edit?gid=652340147#gid=652340147'
 # helikopter = 'https://docs.google.com/spreadsheets/d/1zCd2Q1orjawLtE7pvNTHFph2FvCGzb0ooWclCCV8RMI/edit?gid=652340147#gid=652340147'
-
+# ksiazkinaostro = 'https://docs.google.com/spreadsheets/d/1Xuw74NHb0MzmxHmdXAuOPXSxq0T_3NZW2khfr0xsaPQ/edit?gid=652340147#gid=652340147'
 
 
 #NIE ROBIĆ: 
 #rozdzielczosc_chleba - brak autorów
 
+# link = 'https://docs.google.com/spreadsheets/d/1WTM6ELxoMeSGswNkiEYMLAR0tPxYKVT7hWsYMhkCqbI/edit?gid=652340147#gid=652340147' #ZROBIC PO NAPRAWIENIU KODU DO VIAFU
+# link = 'https://docs.google.com/spreadsheets/d/1Xuw74NHb0MzmxHmdXAuOPXSxq0T_3NZW2khfr0xsaPQ/edit?gid=652340147#gid=652340147' #ZROBIC PO NAPRAWIENIU KODU DO VIAFU
 
-link = 'https://docs.google.com/spreadsheets/d/1zCd2Q1orjawLtE7pvNTHFph2FvCGzb0ooWclCCV8RMI/edit?gid=652340147#gid=652340147'
+
 updated_authors = list_of_authors_from_table(link)                    
                     
 dictionary_of_authors = {}

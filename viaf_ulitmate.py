@@ -50,7 +50,7 @@ def extract_text_from_main_headings(record_data):
 def check_viaf_with_fuzzy_match2(entity_name, threshold=80, max_pages=5, entity_type='personalNames'):
     base_url_search = "https://viaf.org/viaf/search"
     matches = []
-
+    
     # Ensure 'entity_name' is a string
     if not isinstance(entity_name, str):
         entity_name = str(entity_name)
@@ -293,6 +293,9 @@ def check_viaf_with_fuzzy_match2(entity_name, threshold=80, max_pages=5, entity_
 
     # If no matches
     return None
+
+
+
 entity_name = 'Tomasz Domagała'
 
 entity_name = 'Les Émigrants'
