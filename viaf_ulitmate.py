@@ -310,3 +310,34 @@ results = check_viaf_with_fuzzy_match2(entity_name,entity_type='geographicNames'
 entity_name = 'Festiwal Filmowy w Cannes'
 results = check_viaf_with_fuzzy_match2(entity_name,entity_type='corporateNames' )
 #uniform title expression - tytul ujednolicony- warianty nazwy w innych krajach
+
+
+
+
+
+#%% Od NIKODEMA
+
+
+# https://viaf.org/pl/viaf/search?field=local.personalNames&index=viaf&searchTerms=wachek
+base_url_search = "https://viaf.org/viaf/search"
+entity_type = 'local.personalNames'
+entity_name = 'byron'
+
+query_params = {
+    'field': entity_type,
+    'index': 'viaf',
+    'searchTerms': entity_name,
+}
+url = f"{base_url_search}?{urlencode(query_params)}"
+response = requests.get(url)
+response.text
+
+with open('resp.txt', 'w', encoding='utf-8') as txt:
+    txt.writelines(response.text)
+
+
+
+
+
+
+
