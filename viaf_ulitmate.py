@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Nov 14 11:06:07 2024
-
-@author: dariu
-"""
+#%% import
 
 import requests
 from urllib.parse import urlencode
 from fuzzywuzzy import fuzz
 import re
+
+#%%
+
 
 def preprocess_text(text):
     text = re.sub(r'\b\d{4}-\d{4}\b', '', text)
@@ -296,6 +294,8 @@ def check_viaf_with_fuzzy_match2(entity_name, threshold=80, max_pages=5, entity_
 
 
 
+
+
 entity_name = 'Tomasz Domagała'
 
 entity_name = 'Les Émigrants'
@@ -308,9 +308,8 @@ entity_name = 'Łódź'
 results = check_viaf_with_fuzzy_match2(entity_name,entity_type='geographicNames' )
 
 entity_name = 'Festiwal Filmowy w Cannes'
-results = check_viaf_with_fuzzy_match2(entity_name,entity_type='corporateNames' )
+results = check_viaf_with_fuzzy_match2(entity_name)
 #uniform title expression - tytul ujednolicony- warianty nazwy w innych krajach
-
 
 
 
@@ -318,7 +317,11 @@ results = check_viaf_with_fuzzy_match2(entity_name,entity_type='corporateNames' 
 #%% Od NIKODEMA
 
 
-# https://viaf.org/pl/viaf/search?field=local.personalNames&index=viaf&searchTerms=wachek
+
+#https://viaf.org/pl/viaf/search?field=local.personalNames&index=viaf&searchTerms=Woolf+Virginia
+
+# https://viaf.org/pl/viaf/search?field=local.personalNames&index=viaf&searchTerms=kowalski+j%C3%B3zef
+
 base_url_search = "https://viaf.org/viaf/search"
 entity_type = 'local.personalNames'
 entity_name = 'byron'
@@ -334,8 +337,6 @@ response.text
 
 with open('resp.txt', 'w', encoding='utf-8') as txt:
     txt.writelines(response.text)
-
-
 
 
 
