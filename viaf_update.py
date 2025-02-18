@@ -44,7 +44,8 @@ import requests
 from oauth2client.service_account import ServiceAccountCredentials
 import time
 
-from viaf_ulitmate import preprocess_text, extract_text_from_main_headings, check_viaf_with_fuzzy_match2
+# from viaf_ulitmate import preprocess_text, extract_text_from_main_headings, check_viaf_with_fuzzy_match2 (Darka)
+from viaf_ulitmate import normalize_name, get_best_viaf_link  #Julius AI
 
 
 
@@ -127,12 +128,13 @@ def list_of_authors_from_table(link):
     return updated_authors
 
 
-# Utworzenia slownika, w ktorym kluczami sa nazwy autorow, a wartoscia ich viafy     
+# Utworzenia slownika, w ktorym kluczami sa nazwy autorow, a wartoscia ich viafy     #2025-02-18 dodałam inna funcje zamiast check_viaf_with_fuzzy_match2
 def dictionary_of_authors_and_viafs(author):
+    # author = "Adam Mickiewicz"
     try:
         # author = 'Piotr Gaszczyński'
-        author_viaf = check_viaf_with_fuzzy_match2(author)
-        dictionary_of_authors[author] = author_viaf[0][0]
+        author_viaf = get_best_viaf_link(author)
+        dictionary_of_authors[author] = author_viaf
     except TypeError: 
         dictionary_of_authors[author] = None
         print(author)
@@ -234,7 +236,7 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 #NIE ROBIĆ: 
 #rozdzielczosc_chleba - brak autorów
 
-# link = 'https://docs.google.com/spreadsheets/d/1WTM6ELxoMeSGswNkiEYMLAR0tPxYKVT7hWsYMhkCqbI/edit?gid=652340147#gid=652340147' #ZROBIC PO NAPRAWIENIU KODU DO VIAFU
+link = 'https://docs.google.com/spreadsheets/d/1WTM6ELxoMeSGswNkiEYMLAR0tPxYKVT7hWsYMhkCqbI/edit?gid=652340147#gid=652340147' #ZROBIC PO NAPRAWIENIU KODU DO VIAFU
 # link = 'https://docs.google.com/spreadsheets/d/1Xuw74NHb0MzmxHmdXAuOPXSxq0T_3NZW2khfr0xsaPQ/edit?gid=652340147#gid=652340147' #ZROBIC PO NAPRAWIENIU KODU DO VIAFU
 
 

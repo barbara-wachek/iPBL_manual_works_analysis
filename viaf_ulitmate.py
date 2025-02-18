@@ -339,6 +339,105 @@ with open('resp.txt', 'w', encoding='utf-8') as txt:
     txt.writelines(response.text)
 
 
+#%% Julius 
+
+def normalize_name(name):
+    # Remove special characters, convert to lowercase, and strip whitespace
+    return ''.join(e for e in name if e.isalnum()).lower().strip()
+
+
+def get_best_viaf_link(name, threshold=80):
+    url = f"https://viaf.org/viaf/AutoSuggest?query={name}"
+    headers = {
+        "Accept": "application/json"
+    }
+    
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+        
+        if 'result' in data:
+            best_match = None
+            best_ratio = 0
+            normalized_search = normalize_name(name)
+            
+            for item in data['result']:
+                current_name = item.get('term', '')
+                normalized_current = normalize_name(current_name)
+                
+                # Oblicz podobieństwo między nazwami
+                ratio = fuzz.ratio(normalized_search, normalized_current)
+                partial_ratio = fuzz.partial_ratio(normalized_search, normalized_current)
+                token_sort_ratio = fuzz.token_sort_ratio(normalized_search, normalized_current)
+                
+                # Weź najwyższy wynik z różnych metod dopasowania
+                max_ratio = max(ratio, partial_ratio, token_sort_ratio)
+                
+                # Sprawdź czy to najlepsze dopasowanie do tej pory i czy jest to rekord osobowy
+                if max_ratio >= threshold and max_ratio > best_ratio and item.get('nametype') == 'personal':
+                    best_ratio = max_ratio
+                    best_match = {
+                        'viaf_id': item.get('viafid', 'N/A'),
+                        'name': item.get('term', 'N/A'),
+                        'type': item.get('nametype', 'N/A'),
+                        'similarity': max_ratio
+                    }
+            
+            if best_match:
+                viaf_link = f"https://viaf.org/viaf/{best_match['viaf_id']}"
+                return viaf_link
+            else:
+                return None
+                
+        return None
+            
+    except requests.exceptions.RequestException as e:
+        print(f"Błąd połączenia: {e}")
+        return None
+    except ValueError as e:
+        print(f"Błąd parsowania JSON: {e}")
+        return None
+
+# Test the function with a few examples
+test_names = ["Adam Mickiewicz", "Juliusz Słowacki", "Henryk Sienkiewicz"]
+for name in test_names:
+    viaf_link = get_best_viaf_link(name)
+    print(f"{name}: {viaf_link}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
