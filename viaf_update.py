@@ -43,8 +43,8 @@ import requests
 
 from oauth2client.service_account import ServiceAccountCredentials
 import time
-
-# from viaf_ulitmate import preprocess_text, extract_text_from_main_headings, check_viaf_with_fuzzy_match2 (Darka)
+import regex as re
+# from viaf_ulitmate import preprocess_text, extract_text_from_main_headings, check_viaf_with_fuzzy_match2 (Darka, przestało działać)
 from viaf_ulitmate import normalize_name, get_best_viaf_link  #Julius AI
 
 
@@ -239,6 +239,9 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 link = 'https://docs.google.com/spreadsheets/d/1WTM6ELxoMeSGswNkiEYMLAR0tPxYKVT7hWsYMhkCqbI/edit?gid=652340147#gid=652340147' #ZROBIC PO NAPRAWIENIU KODU DO VIAFU
 # link = 'https://docs.google.com/spreadsheets/d/1Xuw74NHb0MzmxHmdXAuOPXSxq0T_3NZW2khfr0xsaPQ/edit?gid=652340147#gid=652340147' #ZROBIC PO NAPRAWIENIU KODU DO VIAFU
 
+
+#test
+link = 'https://docs.google.com/spreadsheets/d/1sjuv58WQwG3vfq7ikaRiUQxOVaF4tbu_XTgWhmamslU/edit?gid=652340147#gid=652340147'
 
 updated_authors = list_of_authors_from_table(link)                    
                     
