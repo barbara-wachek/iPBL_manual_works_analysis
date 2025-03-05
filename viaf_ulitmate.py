@@ -345,7 +345,8 @@ def normalize_name(name):
     return ''.join(e for e in name if e.isalnum()).lower().strip()
 
 
-def get_best_viaf_link(name, threshold=80):
+def get_best_viaf_link(name, threshold=80, nametype='personal'):
+    
     url = f"https://viaf.org/viaf/AutoSuggest?query={name}"
     headers = {
         "Accept": "application/json"
@@ -355,6 +356,7 @@ def get_best_viaf_link(name, threshold=80):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         data = response.json()
+        data = {'query': data.get('query'), 'result': [e for e in data.get('result') if e.get('nametype') == nametype]} 
         
         if 'result' in data:
             best_match = None
