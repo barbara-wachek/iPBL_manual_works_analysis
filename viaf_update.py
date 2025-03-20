@@ -27,6 +27,7 @@ import requests
 from urllib.parse import urlencode
 from fuzzywuzzy import fuzz
 import re
+import random
 
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm 
@@ -44,7 +45,7 @@ import requests
 from oauth2client.service_account import ServiceAccountCredentials
 import time
 import regex as re
-# from viaf_ulitmate import preprocess_text, extract_text_from_main_headings, check_viaf_with_fuzzy_match2 (Darka, przestało działać)
+# from viaf_ulitmate import preprocess_text, extract_text_from_main_headings, check_viaf_with_fuzzy_match2 #Kod Darka powoduje Error querying VIAF search: Expecting value: line 1 column 1 (char 0)
 from viaf_ulitmate import normalize_name, get_best_viaf_link  #Julius AI
 
 
@@ -78,7 +79,7 @@ dokumentacja_prace_manualne_df = dokumentacja_prace_manualne_df.loc[dokumentacja
 dokumentacja_prace_manualne_df = dokumentacja_prace_manualne_df.loc[dokumentacja_prace_manualne_df['LINK DO ARKUSZA'].notna()]
 
 '''Wybranie tych wierszy, które mają STATUS PRAC "nie rozpoczęto" lub "False"'''
-dokumentacja_prace_manualne_df_nie_rozpoczeto = dokumentacja_prace_manualne_df.loc[(dokumentacja_prace_manualne_df['STATUS PRAC'] == "nie rozpoczęto") | (dokumentacja_prace_manualne_df['STATUS PRAC'] == "False")]
+dokumentacja_prace_manualne_df_nie_rozpoczeto = dokumentacja_prace_manualne_df.loc[(dokumentacja_prace_manualne_df['STATUS PRAC'] == "nie rozpoczęto") | (dokumentacja_prace_manualne_df['STATUS PRAC'] == "False") | (dokumentacja_prace_manualne_df['STATUS PRAC'] == "półautomatycznie")]
 
 
 dokumentacja_prace_manualne_df_nie_rozpoczeto_brak_viafowania = dokumentacja_prace_manualne_df_nie_rozpoczeto.loc[dokumentacja_prace_manualne_df_nie_rozpoczeto['uwagi'] != 'viafowanie']
@@ -134,6 +135,7 @@ def dictionary_of_authors_and_viafs(author):
     try:
         # author = 'Piotr Gaszczyński'
         author_viaf = get_best_viaf_link(author)
+        # author_viaf = check_viaf_with_fuzzy_match2(author) #z rozwiązania Darka
         dictionary_of_authors[author] = author_viaf
     except TypeError: 
         dictionary_of_authors[author] = None
@@ -231,31 +233,46 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 #kontent = 'https://docs.google.com/spreadsheets/d/1OYnWnxUCEZyOp4JNdR06WMWb-08fBJQfzp-MUX3A2CA/edit?gid=652340147#gid=652340147'
 # helikopter = 'https://docs.google.com/spreadsheets/d/1zCd2Q1orjawLtE7pvNTHFph2FvCGzb0ooWclCCV8RMI/edit?gid=652340147#gid=652340147'
 # ksiazkinaostro = 'https://docs.google.com/spreadsheets/d/1Xuw74NHb0MzmxHmdXAuOPXSxq0T_3NZW2khfr0xsaPQ/edit?gid=652340147#gid=652340147'
+# zdaniemszota = 'https://docs.google.com/spreadsheets/d/1E6FI-r5ZJ3XpVAlrd9IhijW2kpPxVPnuPV1c-es5aNY/edit?gid=652340147#gid=652340147'
 
 
 #NIE ROBIĆ: 
 #rozdzielczosc_chleba - brak autorów
 
-link = 'https://docs.google.com/spreadsheets/d/1WTM6ELxoMeSGswNkiEYMLAR0tPxYKVT7hWsYMhkCqbI/edit?gid=652340147#gid=652340147' #ZROBIC PO NAPRAWIENIU KODU DO VIAFU
+# link = 'https://docs.google.com/spreadsheets/d/1WTM6ELxoMeSGswNkiEYMLAR0tPxYKVT7hWsYMhkCqbI/edit?gid=652340147#gid=652340147' #ZROBIC PO NAPRAWIENIU KODU DO VIAFU
 # link = 'https://docs.google.com/spreadsheets/d/1Xuw74NHb0MzmxHmdXAuOPXSxq0T_3NZW2khfr0xsaPQ/edit?gid=652340147#gid=652340147' #ZROBIC PO NAPRAWIENIU KODU DO VIAFU
 
 
 #test
-link = 'https://docs.google.com/spreadsheets/d/1sjuv58WQwG3vfq7ikaRiUQxOVaF4tbu_XTgWhmamslU/edit?gid=652340147#gid=652340147'
+link = 'https://docs.google.com/spreadsheets/d/1E6FI-r5ZJ3XpVAlrd9IhijW2kpPxVPnuPV1c-es5aNY/edit?gid=652340147#gid=652340147'
 
-updated_authors = list_of_authors_from_table(link)                    
-                    
+updated_authors = list_of_authors_from_table(link)                
+
+
 dictionary_of_authors = {}
 with ThreadPoolExecutor() as excecutor:
-    list(tqdm(excecutor.map(dictionary_of_authors_and_viafs, updated_authors),total=len(updated_authors)))                 
+    list(tqdm(excecutor.map(dictionary_of_authors_and_viafs, updated_authors),total=len(updated_authors)))                
+       
+    
+    
+#Poniżej sytuacja z czyszczczeniem listy autorów (updated_authors) - przykład zdaniemszota
 
+clean_updated_authors = [author[re.search(r' - ', author).span(0)[1]:] if re.search(r' - ', author) else author for author in updated_authors]
+
+dictionary_of_authors = {}
+
+for author in tqdm(clean_updated_authors, total=len(clean_updated_authors)):
+    dictionary_of_authors_and_viafs(author)
+    time.sleep(random.uniform(2, 5))
+              
+     
 
 
 #%% Tworzenie dataframe. Pamiętać, żeby wpisać nazwy kolumn z df    
 # update_viaf_columns(link, ['Autor', 'Autor książki']) - zawsze uwzględniac nazwy kolumn!
 
 
-df = update_viaf_columns(link, ['Autor'])
+df = update_viaf_columns(link, ['Autor', 'Autor książki'])
 
 with pd.ExcelWriter(r"data\\viafowanie\\helikopter_2024-12-16.xlsx", engine='xlsxwriter') as writer:    
     df.to_excel(writer, 'Posts', index=False)   
