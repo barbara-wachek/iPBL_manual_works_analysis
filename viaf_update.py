@@ -234,13 +234,11 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 # helikopter = 'https://docs.google.com/spreadsheets/d/1zCd2Q1orjawLtE7pvNTHFph2FvCGzb0ooWclCCV8RMI/edit?gid=652340147#gid=652340147'
 # ksiazkinaostro = 'https://docs.google.com/spreadsheets/d/1Xuw74NHb0MzmxHmdXAuOPXSxq0T_3NZW2khfr0xsaPQ/edit?gid=652340147#gid=652340147'
 # zdaniemszota = 'https://docs.google.com/spreadsheets/d/1E6FI-r5ZJ3XpVAlrd9IhijW2kpPxVPnuPV1c-es5aNY/edit?gid=652340147#gid=652340147'
-
+# nowelitery = 
 
 #NIE ROBIĆ: 
 #rozdzielczosc_chleba - brak autorów
-
-# link = 'https://docs.google.com/spreadsheets/d/1WTM6ELxoMeSGswNkiEYMLAR0tPxYKVT7hWsYMhkCqbI/edit?gid=652340147#gid=652340147' #ZROBIC PO NAPRAWIENIU KODU DO VIAFU
-# link = 'https://docs.google.com/spreadsheets/d/1Xuw74NHb0MzmxHmdXAuOPXSxq0T_3NZW2khfr0xsaPQ/edit?gid=652340147#gid=652340147' #ZROBIC PO NAPRAWIENIU KODU DO VIAFU
+# nowelitery - brak autorów; tylko jeden i nie ma viaf
 
 
 #test
@@ -274,7 +272,7 @@ for author in tqdm(clean_updated_authors, total=len(clean_updated_authors)):
 
 df = update_viaf_columns(link, ['Autor', 'Autor książki'])
 
-with pd.ExcelWriter(r"data\\viafowanie\\helikopter_2024-12-16.xlsx", engine='xlsxwriter') as writer:    
+with pd.ExcelWriter(r"data\\viafowanie\\zdaniemszota_2025-03-20.xlsx", engine='xlsxwriter') as writer:    
     df.to_excel(writer, 'Posts', index=False)   
 
    
