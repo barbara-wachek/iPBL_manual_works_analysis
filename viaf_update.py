@@ -234,7 +234,7 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 # helikopter = 'https://docs.google.com/spreadsheets/d/1zCd2Q1orjawLtE7pvNTHFph2FvCGzb0ooWclCCV8RMI/edit?gid=652340147#gid=652340147'
 # ksiazkinaostro = 'https://docs.google.com/spreadsheets/d/1Xuw74NHb0MzmxHmdXAuOPXSxq0T_3NZW2khfr0xsaPQ/edit?gid=652340147#gid=652340147'
 # zdaniemszota = 'https://docs.google.com/spreadsheets/d/1E6FI-r5ZJ3XpVAlrd9IhijW2kpPxVPnuPV1c-es5aNY/edit?gid=652340147#gid=652340147'
-# nowelitery = 
+# kulturaenter = 'https://docs.google.com/spreadsheets/d/1YdBzk8CjGTw-a-qvKYGbiB53CyTxNZ9dVKweOvyIfNw/edit?gid=652340147#gid=652340147
 
 #NIE ROBIĆ: 
 #rozdzielczosc_chleba - brak autorów
@@ -242,7 +242,7 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 
 
 #test
-link = 'https://docs.google.com/spreadsheets/d/1E6FI-r5ZJ3XpVAlrd9IhijW2kpPxVPnuPV1c-es5aNY/edit?gid=652340147#gid=652340147'
+link = 'https://docs.google.com/spreadsheets/d/1YdBzk8CjGTw-a-qvKYGbiB53CyTxNZ9dVKweOvyIfNw/edit?gid=652340147#gid=652340147'
 
 updated_authors = list_of_authors_from_table(link)                
 
@@ -270,9 +270,9 @@ for author in tqdm(clean_updated_authors, total=len(clean_updated_authors)):
 # update_viaf_columns(link, ['Autor', 'Autor książki']) - zawsze uwzględniac nazwy kolumn!
 
 
-df = update_viaf_columns(link, ['Autor', 'Autor książki'])
+df = update_viaf_columns(link, ['Autor'])
 
-with pd.ExcelWriter(r"data\\viafowanie\\zdaniemszota_2025-03-20.xlsx", engine='xlsxwriter') as writer:    
+with pd.ExcelWriter(r"data\\viafowanie\\kulturaenter_2025-03-10.xlsx", engine='xlsxwriter') as writer:    
     df.to_excel(writer, 'Posts', index=False)   
 
    
