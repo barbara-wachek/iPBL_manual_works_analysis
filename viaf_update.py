@@ -235,6 +235,7 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 # ksiazkinaostro = 'https://docs.google.com/spreadsheets/d/1Xuw74NHb0MzmxHmdXAuOPXSxq0T_3NZW2khfr0xsaPQ/edit?gid=652340147#gid=652340147'
 # zdaniemszota = 'https://docs.google.com/spreadsheets/d/1E6FI-r5ZJ3XpVAlrd9IhijW2kpPxVPnuPV1c-es5aNY/edit?gid=652340147#gid=652340147'
 # kulturaenter = 'https://docs.google.com/spreadsheets/d/1YdBzk8CjGTw-a-qvKYGbiB53CyTxNZ9dVKweOvyIfNw/edit?gid=652340147#gid=652340147
+# biuletynpolonistyczny = 'https://docs.google.com/spreadsheets/d/1jyYm-oHnFS9E6LQgtiZ7ZJAfn0kP7kMT9mIzl5AbmzI/edit?gid=652340147#gid=652340147'
 
 #NIE ROBIĆ: 
 #rozdzielczosc_chleba - brak autorów
@@ -242,7 +243,7 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 
 
 #test
-link = 'https://docs.google.com/spreadsheets/d/1YdBzk8CjGTw-a-qvKYGbiB53CyTxNZ9dVKweOvyIfNw/edit?gid=652340147#gid=652340147'
+link = 'https://docs.google.com/spreadsheets/d/1jyYm-oHnFS9E6LQgtiZ7ZJAfn0kP7kMT9mIzl5AbmzI/edit?gid=652340147#gid=652340147'
 
 updated_authors = list_of_authors_from_table(link)                
 
@@ -255,13 +256,13 @@ with ThreadPoolExecutor() as excecutor:
     
 #Poniżej sytuacja z czyszczczeniem listy autorów (updated_authors) - przykład zdaniemszota
 
-clean_updated_authors = [author[re.search(r' - ', author).span(0)[1]:] if re.search(r' - ', author) else author for author in updated_authors]
+# clean_updated_authors = [author[re.search(r' - ', author).span(0)[1]:] if re.search(r' - ', author) else author for author in updated_authors]
 
-dictionary_of_authors = {}
+# dictionary_of_authors = {}
 
-for author in tqdm(clean_updated_authors, total=len(clean_updated_authors)):
-    dictionary_of_authors_and_viafs(author)
-    time.sleep(random.uniform(2, 5))
+# for author in tqdm(clean_updated_authors, total=len(clean_updated_authors)):
+#     dictionary_of_authors_and_viafs(author)
+#     time.sleep(random.uniform(2, 5))
               
      
 
@@ -272,7 +273,7 @@ for author in tqdm(clean_updated_authors, total=len(clean_updated_authors)):
 
 df = update_viaf_columns(link, ['Autor'])
 
-with pd.ExcelWriter(r"data\\viafowanie\\kulturaenter_2025-03-10.xlsx", engine='xlsxwriter') as writer:    
+with pd.ExcelWriter(r"data\\viafowanie\\biuletynpolonistyczny_2025-03-24.xlsx", engine='xlsxwriter') as writer:    
     df.to_excel(writer, 'Posts', index=False)   
 
    
