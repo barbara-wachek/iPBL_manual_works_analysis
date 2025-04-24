@@ -28,24 +28,26 @@ from urllib.parse import urlencode
 from fuzzywuzzy import fuzz
 import re
 import random
-
+import time
+import regex as re
 from concurrent.futures import ThreadPoolExecutor
 from tqdm import tqdm 
 from datetime import datetime
-from gspread.exceptions import WorksheetNotFound
 import pandas as pd
-import gspread as gs
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
-from gspread_dataframe import set_with_dataframe, get_as_dataframe
 import regex as re
 import numpy as np
 import requests
-
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
 from oauth2client.service_account import ServiceAccountCredentials
-import time
-import regex as re
-# from viaf_ulitmate import preprocess_text, extract_text_from_main_headings, check_viaf_with_fuzzy_match2 #Kod Darka powoduje Error querying VIAF search: Expecting value: line 1 column 1 (char 0)
+
+
+import gspread as gs
+from gspread_dataframe import set_with_dataframe, get_as_dataframe
+from gspread.exceptions import WorksheetNotFound
+
+
+# # from viaf_ulitmate import preprocess_text, extract_text_from_main_headings, check_viaf_with_fuzzy_match2 #Kod Darka powoduje Error querying VIAF search: Expecting value: line 1 column 1 (char 0)
 from viaf_ulitmate import normalize_name, get_best_viaf_link  #Julius AI
 
 
@@ -56,16 +58,52 @@ from viaf_ulitmate import normalize_name, get_best_viaf_link  #Julius AI
 gc = gs.oauth()
 #autoryzacja do penetrowania dysku
 gauth = GoogleAuth()
+gauth.LoadClientConfigFile("client_secrets.json")
 gauth.LocalWebserverAuth()
 drive = GoogleDrive(gauth)
 
 
 #%% functions
 def gsheet_to_df(gsheetId, worksheet):
+    
     gc = gs.oauth()
     sheet = gc.open_by_key(gsheetId)
     df = get_as_dataframe(sheet.worksheet(worksheet), evaluate_formulas=True, dtype=str)
     return df
+
+
+
+# #%% Próba naprawy kodu z GPT
+
+# from pydrive.auth import GoogleAuth
+# from pydrive.drive import GoogleDrive
+
+# gauth = GoogleAuth()
+# gauth.LocalWebserverAuth()  # To otworzy przeglądarkę
+
+# drive = GoogleDrive(gauth)
+# print("Autoryzacja zakończona.")
+
+
+
+# import gspread
+# from oauth2client.service_account import ServiceAccountCredentials
+
+# # Zakresy, które określają dostęp
+# scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+
+# # Użycie pliku client_secrets.json do autoryzacji
+# creds = ServiceAccountCredentials.from_json_keyfile_name("client_secrets.json", scope)
+
+# # Autoryzacja i uzyskanie dostępu do arkusza Google
+# gc = gspread.authorize(creds)
+
+# # Testowanie połączenia - otwieranie arkusza
+# worksheet = gc.open_by_key('1jCjEaopxsezprUiauuYkwQcG1cp40NqdhvxIzG5qUu8').sheet1
+# print(worksheet.get_all_records())  # Przykładowa akcja, aby upewnić się, że wszystko działa
+
+
+
 
 
 
@@ -236,6 +274,10 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 # zdaniemszota = 'https://docs.google.com/spreadsheets/d/1E6FI-r5ZJ3XpVAlrd9IhijW2kpPxVPnuPV1c-es5aNY/edit?gid=652340147#gid=652340147'
 # kulturaenter = 'https://docs.google.com/spreadsheets/d/1YdBzk8CjGTw-a-qvKYGbiB53CyTxNZ9dVKweOvyIfNw/edit?gid=652340147#gid=652340147
 # biuletynpolonistyczny = 'https://docs.google.com/spreadsheets/d/1jyYm-oHnFS9E6LQgtiZ7ZJAfn0kP7kMT9mIzl5AbmzI/edit?gid=652340147#gid=652340147'
+# moznaprzeczytac = 'https://docs.google.com/spreadsheets/d/1F4dLI93XL_36GMFhuxp_ibEAuPIdCgK8p0y1UTrcVZI/edit?gid=652340147#gid=652340147'
+
+
+
 
 #NIE ROBIĆ: 
 #rozdzielczosc_chleba - brak autorów
@@ -243,7 +285,7 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 
 
 #test
-link = 'https://docs.google.com/spreadsheets/d/1jyYm-oHnFS9E6LQgtiZ7ZJAfn0kP7kMT9mIzl5AbmzI/edit?gid=652340147#gid=652340147'
+link = 'https://docs.google.com/spreadsheets/d/1F4dLI93XL_36GMFhuxp_ibEAuPIdCgK8p0y1UTrcVZI/'
 
 updated_authors = list_of_authors_from_table(link)                
 
@@ -273,7 +315,7 @@ with ThreadPoolExecutor() as excecutor:
 
 df = update_viaf_columns(link, ['Autor'])
 
-with pd.ExcelWriter(r"data\\viafowanie\\biuletynpolonistyczny_2025-03-24.xlsx", engine='xlsxwriter') as writer:    
+with pd.ExcelWriter(r"data\\viafowanie\\biuletynpolonistyczny_2025-04-18.xlsx", engine='xlsxwriter') as writer:    
     df.to_excel(writer, 'Posts', index=False)   
 
    
