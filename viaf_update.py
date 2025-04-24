@@ -65,6 +65,7 @@ drive = GoogleDrive(gauth)
 
 #%% functions
 def gsheet_to_df(gsheetId, worksheet):
+    # gsheetId = '1jCjEaopxsezprUiauuYkwQcG1cp40NqdhvxIzG5qUu8'
     
     gc = gs.oauth()
     sheet = gc.open_by_key(gsheetId)
