@@ -276,6 +276,7 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 # kulturaenter = 'https://docs.google.com/spreadsheets/d/1YdBzk8CjGTw-a-qvKYGbiB53CyTxNZ9dVKweOvyIfNw/edit?gid=652340147#gid=652340147
 # biuletynpolonistyczny = 'https://docs.google.com/spreadsheets/d/1jyYm-oHnFS9E6LQgtiZ7ZJAfn0kP7kMT9mIzl5AbmzI/edit?gid=652340147#gid=652340147'
 # moznaprzeczytac = 'https://docs.google.com/spreadsheets/d/1F4dLI93XL_36GMFhuxp_ibEAuPIdCgK8p0y1UTrcVZI/edit?gid=652340147#gid=652340147'
+# czytamaja = 'https://docs.google.com/spreadsheets/d/1d07AHb6YKPxM4rCaqMRWoZaicVKHDhw8fk8qoOIkhFM/edit?gid=652340147#gid=652340147'
 
 
 
@@ -286,7 +287,7 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 
 
 #test
-link = 'https://docs.google.com/spreadsheets/d/1F4dLI93XL_36GMFhuxp_ibEAuPIdCgK8p0y1UTrcVZI/'
+link = 'https://docs.google.com/spreadsheets/d/1d07AHb6YKPxM4rCaqMRWoZaicVKHDhw8fk8qoOIkhFM/edit?gid=652340147#gid=652340147'
 
 updated_authors = list_of_authors_from_table(link)                
 
@@ -314,9 +315,9 @@ with ThreadPoolExecutor() as excecutor:
 # update_viaf_columns(link, ['Autor', 'Autor książki']) - zawsze uwzględniac nazwy kolumn!
 
 
-df = update_viaf_columns(link, ['Autor'])
+df = update_viaf_columns(link, ['Autor', 'Autor książki'])
 
-with pd.ExcelWriter(r"data\\viafowanie\\biuletynpolonistyczny_2025-04-18.xlsx", engine='xlsxwriter') as writer:    
+with pd.ExcelWriter(r"data\\viafowanie\\czytamaja_2025-03-03.xlsx", engine='xlsxwriter') as writer:    
     df.to_excel(writer, 'Posts', index=False)   
 
    
