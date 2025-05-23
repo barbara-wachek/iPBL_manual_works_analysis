@@ -280,6 +280,7 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 # coczytamkontentemu: 'https://docs.google.com/spreadsheets/d/1zPOUoaP-lVYr7NfDtN6Q-XoyN1kzhz_phZTd8xqd_n4/'
 # czytelniaweb = 'https://docs.google.com/spreadsheets/d/1t7IvgAoQoZYop38jOG3QMn_8QVH4c4NBh-ZuGcfUCbo/edit?gid=652340147#gid=652340147'
 # wielkibuk = 'https://docs.google.com/spreadsheets/d/1ZOXtMS_4qk7qFw_1aQdmUTH4miBAJxRR15KItCbt7EA/edit?gid=652340147#gid=652340147'
+# makiwgiverny = 'https://docs.google.com/spreadsheets/d/1TAwACEyQaJjYFB4bur7Mk1ONuPhfTSNd7Mvhf62AALA/edit?gid=652340147#gid=652340147
 
 
 
@@ -289,7 +290,7 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 
 
 #test
-link = 'https://docs.google.com/spreadsheets/d/1ZOXtMS_4qk7qFw_1aQdmUTH4miBAJxRR15KItCbt7EA/edit?gid=652340147#gid=652340147'
+link = 'https://docs.google.com/spreadsheets/d/1TAwACEyQaJjYFB4bur7Mk1ONuPhfTSNd7Mvhf62AALA/edit?gid=652340147#gid=652340147'
 
 updated_authors = list_of_authors_from_table(link)                
 
@@ -319,7 +320,7 @@ with ThreadPoolExecutor() as excecutor:
 
 df = update_viaf_columns(link, ['Autor', 'Autor książki'])
 
-with pd.ExcelWriter(r"data\\viafowanie\\wielkibuk_2025-05-22.xlsx", engine='xlsxwriter') as writer:    
+with pd.ExcelWriter(r"data\\viafowanie\\makiwgiverny_2025-05-23.xlsx", engine='xlsxwriter') as writer:    
     df.to_excel(writer, 'Posts', index=False)   
 
    
