@@ -41,7 +41,7 @@ def gsheet_to_df(gsheetId, worksheet):
 
 file_list = drive.ListFile({'q': "'1ZrLyjsA6Q-k78M8gpuK5EB2NXCk56zA0' in parents and trashed=false"}).GetList()
 
-excluded_names = {'test', 'BK', 'KP', 'PCL', '.iPBL – statystyki rekordów do raportów rocznych', 'IH'}
+excluded_names = {'test', 'BK', 'KP', '.iPBL – statystyki rekordów do raportów rocznych', 'IH'}
 
 # Filtrowanie plików
 filtered_files = [f for f in file_list if f['title'] not in excluded_names]
@@ -148,7 +148,7 @@ print(f"\n🧮 Łączna prognozowana liczba rekordów od wszystkich pracowników
 
 #Na podstawie pliku: https://docs.google.com/spreadsheets/d/1fZxyEYxGPsGfaMGXUFYaCrTAgxV40Yi4-vzgIsyU9LA/edit?gid=199726957#gid=199726957 
 
-szacunki = {'AW': 4045.13, 'BD': 3526.95, 'BL': 4045.13, 'EP': 3627.25, "MSz": 3109.07, 'RM': 15996.66}
+szacunki = {'AW': 4045.13, 'BD': 3526.95, 'BL': 4045.13, 'EP': 3627.25, 'PCL': 1604.68, 'MSz': 3109.07, 'RM': 15996.66}
 
 realizacje = {}
 
