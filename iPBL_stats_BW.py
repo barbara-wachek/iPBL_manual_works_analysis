@@ -41,7 +41,7 @@ def gsheet_to_df(gsheetId, worksheet):
 
 file_list = drive.ListFile({'q': "'1ZrLyjsA6Q-k78M8gpuK5EB2NXCk56zA0' in parents and trashed=false"}).GetList()
 
-excluded_names = {'test', 'BK', 'KP', '.iPBL – statystyki rekordów do raportów rocznych', 'IH'}
+excluded_names = {'test', 'BK', 'KP', '.iPBL – statystyki rekordów do raportów rocznych'}
 
 # Filtrowanie plików
 filtered_files = [f for f in file_list if f['title'] not in excluded_names]
@@ -133,11 +133,17 @@ months_others = months_total - months_special_worker
 forecast_records = {}
 
 for worker, monthly_rate in monthly_growth_rates.items():
-    months = months_special_worker if worker == special_worker else months_total
-    
+    #Wartosc dla IH przyjete na sztywno
+    if worker == 'IH': 
+        forecast = 702
+        months = months_total
+        forecast_records[worker] = forecast
+        
     # Prognozowana liczba rekordów w tych miesiącach
-    forecast = monthly_rate * months
-    forecast_records[worker] = forecast
+    else:
+        months = months_special_worker if worker == special_worker else months_total
+        forecast = monthly_rate * months
+        forecast_records[worker] = forecast
     
     print(f"➡ {worker}: prognozowana liczba rekordów za kolejne {months} miesięcy = {forecast:.0f}")
 
@@ -148,7 +154,7 @@ print(f"\n🧮 Łączna prognozowana liczba rekordów od wszystkich pracowników
 
 #Na podstawie pliku: https://docs.google.com/spreadsheets/d/1fZxyEYxGPsGfaMGXUFYaCrTAgxV40Yi4-vzgIsyU9LA/edit?gid=199726957#gid=199726957 
 
-szacunki = {'AW': 4045.13, 'BD': 3526.95, 'BL': 4045.13, 'EP': 3627.25, 'PCL': 1604.68, 'MSz': 3109.07, 'RM': 15996.66}
+szacunki = {'AW': 4045.13, 'BD': 3526.95, 'BL': 4045.13, 'EP': 3627.25, 'PCL': 1604.68, 'MSz': 3109.07, 'RM': 15996.66, 'IH': 702}
 
 realizacje = {}
 

@@ -227,10 +227,12 @@ final_df_only_manual_copy['REKORDY ZAAKCEPTOWANE'].sum()
 final_df_only_manual_copy.loc[final_df_only_manual_copy['STATUS PRAC'] == 'półautomatycznie','REKORDY ZAAKCEPTOWANE'].sum()
 #2025-05-22: rekordy polautomatyczne: 4706
 #2025-05-26: rekordy polautomatyczne: 4852
+#2025-06-09: rekordy polautomatyczne: 6941
 
 final_df_only_manual_copy.loc[final_df_only_manual_copy['STATUS PRAC'] != 'półautomatycznie','REKORDY ZAAKCEPTOWANE'].sum()
 #rekordy manualne (only) = 24558
 #26.05.2025: rekordy manualne (only) = 24656
+#09.06.2025: 25186
 
 
 
