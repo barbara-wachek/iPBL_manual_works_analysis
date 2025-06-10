@@ -281,7 +281,7 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 # czytelniaweb = 'https://docs.google.com/spreadsheets/d/1t7IvgAoQoZYop38jOG3QMn_8QVH4c4NBh-ZuGcfUCbo/edit?gid=652340147#gid=652340147'
 # wielkibuk = 'https://docs.google.com/spreadsheets/d/1ZOXtMS_4qk7qFw_1aQdmUTH4miBAJxRR15KItCbt7EA/edit?gid=652340147#gid=652340147'
 # makiwgiverny = 'https://docs.google.com/spreadsheets/d/1TAwACEyQaJjYFB4bur7Mk1ONuPhfTSNd7Mvhf62AALA/edit?gid=652340147#gid=652340147
-
+# czytanieisluchanie = 'https://docs.google.com/spreadsheets/d/1Rk-QolRJ8W_Tw2uH3riTPtfCfFm1P9-Np8bdmywxti8/edit?gid=652340147#gid=652340147
 
 
 #NIE ROBIĆ: 
@@ -289,8 +289,8 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 # nowelitery - brak autorów; tylko jeden i nie ma viaf
 
 
-#test
-link = 'https://docs.google.com/spreadsheets/d/1TAwACEyQaJjYFB4bur7Mk1ONuPhfTSNd7Mvhf62AALA/edit?gid=652340147#gid=652340147'
+#%% main
+link = 'https://docs.google.com/spreadsheets/d/1Rk-QolRJ8W_Tw2uH3riTPtfCfFm1P9-Np8bdmywxti8/edit?gid=652340147#gid=652340147'
 
 updated_authors = list_of_authors_from_table(link)                
 
@@ -299,8 +299,7 @@ dictionary_of_authors = {}
 with ThreadPoolExecutor() as excecutor:
     list(tqdm(excecutor.map(dictionary_of_authors_and_viafs, updated_authors),total=len(updated_authors)))                
        
-    
-    
+     
 #Poniżej sytuacja z czyszczczeniem listy autorów (updated_authors) - przykład zdaniemszota
 
 # clean_updated_authors = [author[re.search(r' - ', author).span(0)[1]:] if re.search(r' - ', author) else author for author in updated_authors]
@@ -312,15 +311,14 @@ with ThreadPoolExecutor() as excecutor:
 #     time.sleep(random.uniform(2, 5))
               
      
-
-
 #%% Tworzenie dataframe. Pamiętać, żeby wpisać nazwy kolumn z df    
 # update_viaf_columns(link, ['Autor', 'Autor książki']) - zawsze uwzględniac nazwy kolumn!
+#zmienic nazwe pliku - na nazwe tabeli, która uzupełniamy
 
 
 df = update_viaf_columns(link, ['Autor', 'Autor książki'])
 
-with pd.ExcelWriter(r"data\\viafowanie\\makiwgiverny_2025-05-23.xlsx", engine='xlsxwriter') as writer:    
+with pd.ExcelWriter(r"data\\viafowanie\\czytanieisluchanie_2025-06-10.xlsx", engine='xlsxwriter') as writer:    
     df.to_excel(writer, 'Posts', index=False)   
 
    
