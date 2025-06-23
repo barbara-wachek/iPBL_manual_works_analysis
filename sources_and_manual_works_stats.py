@@ -216,6 +216,7 @@ final_df_only_manual_copy['REKORDY ZAAKCEPTOWANE'] = pd.to_numeric(final_df_only
 final_df_only_manual_copy['REKORDY ZAAKCEPTOWANE'].sum() 
 #2025-05-22: WSZYSTKIE (opracowane manualne i półautomatyczne): 29264
 #2025-05-26: WSZYSTKIE (opracowane manualne i półautomatyczne): 29508
+#2025-06-23: WSZYSTKIE (opracowane manualnie i półautomatycznie): 33659
 
 # Archiwalne:
 # final_df_only_manual['REKORDY ZAAKCEPTOWANE'].sum()  
@@ -228,16 +229,16 @@ final_df_only_manual_copy.loc[final_df_only_manual_copy['STATUS PRAC'] == 'pół
 #2025-05-22: rekordy polautomatyczne: 4706
 #2025-05-26: rekordy polautomatyczne: 4852
 #2025-06-09: rekordy polautomatyczne: 6941
+#2025-06-23: rekordy polautomatyczne: 8212
 
 final_df_only_manual_copy.loc[final_df_only_manual_copy['STATUS PRAC'] != 'półautomatycznie','REKORDY ZAAKCEPTOWANE'].sum()
 #rekordy manualne (only) = 24558
 #26.05.2025: rekordy manualne (only) = 24656
 #09.06.2025: 25186
+#23.06.2025: 25447
 
 
-
-
-#Funkcje ponizej raczej dzialaja poprawnie
+#Funkcje ponizej raczej dzialaja poprawnie - trzeba na innej zmiennej to zrobic
 # update_zakres_dat_w_zrodle(final_df_only_manual)    
 # update_zakres_dat_oprac_rekordow(final_df_only_manual)
 
