@@ -283,6 +283,8 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 # makiwgiverny = 'https://docs.google.com/spreadsheets/d/1TAwACEyQaJjYFB4bur7Mk1ONuPhfTSNd7Mvhf62AALA/edit?gid=652340147#gid=652340147
 # czytanieisluchanie = 'https://docs.google.com/spreadsheets/d/1Rk-QolRJ8W_Tw2uH3riTPtfCfFm1P9-Np8bdmywxti8/edit?gid=652340147#gid=652340147
 # dom-echa = 'https://docs.google.com/spreadsheets/d/1anYisZj2QNiBScJP8k_i5Z0ykKBnmdJZxUDT8-I6N4o/edit?gid=652340147#gid=652340147
+# zakladmagazyn = 'https://docs.google.com/spreadsheets/d/1jhnhAzrrzdFjgbUIJpUiRjRufUAO37jzbn1QrYDLKgY/edit?gid=652340147#gid=652340147'
+# tlenliteracki = 'https://docs.google.com/spreadsheets/d/1A8bd5klfIXheUVZnm1ngRh2TJd9eBwWJhBTd8S8Ru3I/edit?gid=652340147#gid=652340147
 
 
 #NIE ROBIĆ: 
@@ -291,7 +293,7 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 
 
 #%% main
-link = 'https://docs.google.com/spreadsheets/d/1anYisZj2QNiBScJP8k_i5Z0ykKBnmdJZxUDT8-I6N4o/edit?gid=652340147#gid=652340147'
+link = 'https://docs.google.com/spreadsheets/d/1A8bd5klfIXheUVZnm1ngRh2TJd9eBwWJhBTd8S8Ru3I/edit?gid=652340147#gid=652340147'
 
 updated_authors = list_of_authors_from_table(link)                
 
@@ -317,9 +319,9 @@ with ThreadPoolExecutor() as excecutor:
 #zmienic nazwe pliku - na nazwe tabeli, która uzupełniamy
 
 
-df = update_viaf_columns(link, ['Autor', 'Autor książki'])
+df = update_viaf_columns(link, ['Autor'])
 
-with pd.ExcelWriter(r"data\\viafowanie\\dom-echa_2025-06-12.xlsx", engine='xlsxwriter') as writer:    
+with pd.ExcelWriter(r"data\\viafowanie\\tlenliteracki_2025-06-26.xlsx", engine='xlsxwriter') as writer:    
     df.to_excel(writer, 'Posts', index=False)   
 
    
