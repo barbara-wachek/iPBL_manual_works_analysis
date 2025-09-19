@@ -286,7 +286,8 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 # zakladmagazyn = 'https://docs.google.com/spreadsheets/d/1jhnhAzrrzdFjgbUIJpUiRjRufUAO37jzbn1QrYDLKgY/edit?gid=652340147#gid=652340147'
 # tlenliteracki = 'https://docs.google.com/spreadsheets/d/1A8bd5klfIXheUVZnm1ngRh2TJd9eBwWJhBTd8S8Ru3I/edit?gid=652340147#gid=652340147
 # magazynsuburbia = 'https://docs.google.com/spreadsheets/d/18HUy1Vb4JBuPo5kGfuSGI8TsGJfUvzVn4JVwcY-ftbU/edit?gid=652340147#gid=652340147'
-
+# czas_kultury = 'https://docs.google.com/spreadsheets/d/1T6JHJxlZJtAhUpYNS37CTbRmRN5Q4-_YYD6GXa2MADc/edit?gid=252367651#gid=252367651'
+# magazyn_wizje = 'https://docs.google.com/document/d/1l3hsqJ9kXF_EzSP__ZYM2qFnwmdfykyyoKHpz01OKA0/edit?hl=pl&forcehl=1&tab=t.0'
 
 #NIE ROBIĆ: 
 #rozdzielczosc_chleba - brak autorów
@@ -294,7 +295,7 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 
 
 #%% main
-link = 'https://docs.google.com/spreadsheets/d/18HUy1Vb4JBuPo5kGfuSGI8TsGJfUvzVn4JVwcY-ftbU/edit?gid=652340147#gid=652340147'
+link = 'https://docs.google.com/spreadsheets/d/12tKrefcwoaOcfcEgGne8PJPu6eW9sXUy3EG4eWj--wA/edit?gid=652340147#gid=652340147'
 
 updated_authors = list_of_authors_from_table(link)                
 
@@ -322,7 +323,7 @@ with ThreadPoolExecutor() as excecutor:
 
 df = update_viaf_columns(link, ['Autor'])
 
-with pd.ExcelWriter(r"data\\viafowanie\\magazynsuburbia_2025-07-09.xlsx", engine='xlsxwriter') as writer:    
+with pd.ExcelWriter(r"data\\viafowanie\\magazynwizje_2024-06-07.xlsx", engine='xlsxwriter') as writer:    
     df.to_excel(writer, 'Posts', index=False)   
 
    
