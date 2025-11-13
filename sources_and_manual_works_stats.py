@@ -34,9 +34,10 @@ def gsheet_to_df(gsheetId, worksheet):
 def update_rekordy_zaakceptowane(df, max_retries=3, backoff_factor=2):
     for index, row in tqdm(df.iterrows()):
         link = row['LINK']
+        name = row['LINK DO STRONY']
         
         if pd.isna(link):
-            print(f"Wiersz {index}: brak linka – wpisano 0")
+            print(f"Wiersz {index}: brak linka dla strony {name} – wpisano 0")
             df.at[index, 'REKORDY ZAAKCEPTOWANE'] = 0
             continue
         
@@ -308,23 +309,67 @@ print("\n".join(lines))
 
 
 
+#%%
+#Poniej próba poprawy kodu (bo jest rozbieznosc w sumie zapisów wg tego kodu i kodu generujacego cotygodniowe statystyki)
+# Funkcja do pobrania danych z arkusza Google (z Twojego kodu)
+def gsheet_to_df(gsheetId, worksheet):
+    sheet = gc.open_by_key(gsheetId)
+    df = get_as_dataframe(sheet.worksheet(worksheet), evaluate_formulas=True, dtype=str).dropna(how='all').dropna(how='all', axis=1)
+    return df
 
+# Pobranie wszystkich linków z tabeli manualnych
+links = final_df_only_manual['LINK'].dropna().unique()
+
+# Lista do wyników
+results = []
+
+for link in tqdm(links):
+    try:
+        gsheetId_match = re.search(r'(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link)
+        if gsheetId_match is None:
+            results.append((link, "Niepoprawny link", 0))
+            continue
+        
+        gsheetId = gsheetId_match.group(0)
+        table_df = gsheet_to_df(gsheetId, 'Posts')
+        total_records = len(table_df)
+        
+        # Sprawdzenie liczby rekordów, które mają 'do PBL' i 'Link'
+        records_with_link = table_df['Link'].notna().sum() if 'Link' in table_df.columns else 0
+        records_do_pbl = table_df['do PBL'].notna().sum() if 'do PBL' in table_df.columns else 0
+
+        results.append((link, total_records, records_with_link, records_do_pbl))
+
+    except Exception as e:
+        results.append((link, f"Błąd: {e}", 0, 0))
+
+# Zamiana na DataFrame dla łatwego przeglądu
+results_df = pd.DataFrame(results, columns=['LINK', 'Total_records', 'Records_with_Link', 'Records_do_PBL'])
+results_df.sort_values(by='Total_records', ascending=False, inplace=True)
+
+# Wyświetlenie tabeli
+for col in ['Total_records', 'Records_with_Link', 'Records_do_PBL']:
+    results_df[col] = pd.to_numeric(results_df[col], errors='coerce')
+
+# Sortowanie już bez błędów
+results_df.sort_values(by='Total_records', ascending=False, inplace=True)
+
+# Wyświetlenie
+print(results_df)
 
 
 # Przygotowanie danych do DataFrame 
-report_data = {
-    'Opis': ['Data raportu', 'Liczba wszystkich serwisów', 'Liczba wszystkich DOSTĘPNYCH serwisów', 'Liczba serwisów do oprac. manualnego', 'Liczba serwisów do oprac. automatycznego', 'Zeskrobane serwisy','Zeskrobane serwisy (tylko do oprac. manualnego)', 'Zakończono opracowanie','Rozpoczęto opracowanie', 'Przerwano opracowanie', 'Serwisy gotowe do przydzielenia (są tabelki)', 'Rekordy zaakceptowane do PBL'],
-    'Wartość': [datetime.today().date(), final_df.shape[0], final_df_only_available_sources.shape[0], final_df_only_manual.shape[0], final_df_only_automatic.shape[0], final_df['CZY POZYSKANO?'].value_counts()['TAK'], final_df_only_manual['CZY POZYSKANO?'].value_counts()['TAK'], final_df['STATUS PRAC'].value_counts()['zakończono'], final_df['STATUS PRAC'].value_counts()['rozpoczęto'], final_df['STATUS PRAC'].value_counts()['przerwano'], final_df_only_manual.loc[(final_df_only_manual['czy_przekazano_do_manual'] == 'tak') & (final_df_only_manual['KTO'].isna())].shape[0], final_df_only_manual['REKORDY ZAAKCEPTOWANE'].sum()]
-}
+# report_data = {
+#     'Opis': ['Data raportu', 'Liczba wszystkich serwisów', 'Liczba wszystkich DOSTĘPNYCH serwisów', 'Liczba serwisów do oprac. manualnego', 'Liczba serwisów do oprac. automatycznego', 'Zeskrobane serwisy','Zeskrobane serwisy (tylko do oprac. manualnego)', 'Zakończono opracowanie','Rozpoczęto opracowanie', 'Przerwano opracowanie', 'Serwisy gotowe do przydzielenia (są tabelki)', 'Rekordy zaakceptowane do PBL'],
+#     'Wartość': [datetime.today().date(), final_df.shape[0], final_df_only_available_sources.shape[0], final_df_only_manual.shape[0], final_df_only_automatic.shape[0], final_df['CZY POZYSKANO?'].value_counts()['TAK'], final_df_only_manual['CZY POZYSKANO?'].value_counts()['TAK'], final_df['STATUS PRAC'].value_counts()['zakończono'], final_df['STATUS PRAC'].value_counts()['rozpoczęto'], final_df['STATUS PRAC'].value_counts()['przerwano'], final_df_only_manual.loc[(final_df_only_manual['czy_przekazano_do_manual'] == 'tak') & (final_df_only_manual['KTO'].isna())].shape[0], final_df_only_manual['REKORDY ZAAKCEPTOWANE'].sum()]
+# }
 
-# Tworzenie DataFrame
-df = pd.DataFrame(report_data)
+# # Tworzenie DataFrame
+# df = pd.DataFrame(report_data)
 
-# Zapis do Excela
-with pd.ExcelWriter(f"data\\raport.xlsx") as writer:
-    df.to_excel(writer, sheet_name='Raport', index=False)
-
-
+# # Zapis do Excela
+# with pd.ExcelWriter(f"data\\raport.xlsx") as writer:
+#     df.to_excel(writer, sheet_name='Raport', index=False)
 
 
 
@@ -335,25 +380,22 @@ with pd.ExcelWriter(f"data\\raport.xlsx") as writer:
 
 
 
-### KOMENTARZE
-#Funkcja update_rekordy_pozyskane - raczej nie używac i pobierac zawartosci z tabeli, która bazuje na uzupełnieniach ręcznych. Przy korzystaniu z funkcji co rusz inne liczby zwraca + nie ma jak zliczyc serwisów, które są opracowane, ale jeszcze nie ma plików w tabeli do oprac. manualnego (np. Culture.pl - tylko json)
-#ZAPISZ RAPORT w jakim formacie i wyslij do arkusza? Zastanowić się
-#Napisać testy jednostkowe dla tego pliku 
+
+
+# ### KOMENTARZE
+# #Funkcja update_rekordy_pozyskane - raczej nie używac i pobierac zawartosci z tabeli, która bazuje na uzupełnieniach ręcznych. Przy korzystaniu z funkcji co rusz inne liczby zwraca + nie ma jak zliczyc serwisów, które są opracowane, ale jeszcze nie ma plików w tabeli do oprac. manualnego (np. Culture.pl - tylko json)
 
 
 
-
-#Wyrzucenie zbędnych dla uczenia maszynowego kolumn:
-machine_learning_df = final_df_only_manual.drop(columns=['CZY DO PRAC MANUALNYCH (PO ZMIANACH)', 'czy_przekazano_do_manual', 'CZY POZYSKANO?', 'OSOBA OPRACOWUJĄCA', 'STATUS PRAC'])
-machine_learning_df = machine_learning_df.rename(columns={'LINK DO ARKUSZA': 'NAZWA PLIKU', 'LINK':'LINK DO PLIKU'})
-
-#Utworzyć z tego plik xlsx
-#Na końcu wysłać tabele na dysk do osobnego arkusza
+# #Wyrzucenie zbędnych dla uczenia maszynowego kolumn:
+# machine_learning_df = final_df_only_manual.drop(columns=['CZY DO PRAC MANUALNYCH (PO ZMIANACH)', 'czy_przekazano_do_manual', 'CZY POZYSKANO?', 'OSOBA OPRACOWUJĄCA', 'STATUS PRAC'])
+# machine_learning_df = machine_learning_df.rename(columns={'LINK DO ARKUSZA': 'NAZWA PLIKU', 'LINK':'LINK DO PLIKU'})
 
 
-with pd.ExcelWriter(f"data\iPBL_manual_works_stats_{datetime.today().date()}.xlsx", engine='xlsxwriter') as writer:    
-    machine_learning_df.to_excel(writer, 'Posts', index=False, encoding='utf-8')   
-    writer.save()   
+
+# with pd.ExcelWriter(f"data\iPBL_manual_works_stats_{datetime.today().date()}.xlsx", engine='xlsxwriter') as writer:    
+#     machine_learning_df.to_excel(writer, 'Posts', index=False, encoding='utf-8')   
+#     writer.save()   
 
 
 
