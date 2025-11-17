@@ -30,46 +30,120 @@ def gsheet_to_df(gsheetId, worksheet):
     df = get_as_dataframe(sheet.worksheet(worksheet), evaluate_formulas=True, dtype=str).dropna(how='all').dropna(how='all', axis=1)
     return df
 
-
 def update_rekordy_zaakceptowane(df, max_retries=3, backoff_factor=2):
-    for index, row in tqdm(df.iterrows()):
+    for index, row in tqdm(df.iterrows(), total=len(df)):
         link = row['LINK']
         name = row['LINK DO STRONY']
-        
+
         if pd.isna(link):
             print(f"Wiersz {index}: brak linka dla strony {name} – wpisano 0")
             df.at[index, 'REKORDY ZAAKCEPTOWANE'] = 0
             continue
-        
+
         retries = 0
         while retries < max_retries:
             try:
-                gsheetId = re.search('(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
+                # Wyciągnięcie ID arkusza
+                gsheetId = re.search(
+                    r'(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]+',
+                    link
+                ).group(0)
+
+                # Pobranie arkusza Posts
                 table_df = gsheet_to_df(gsheetId, 'Posts')
+
+                # Logowanie kolumn dla debugowania
+                print(f"Wiersz {index}: kolumny arkusza: {table_df.columns.tolist()}")
+
+                # Filtrowanie rekordów
                 filtered_df = table_df[(table_df['do PBL'] == 'True') & (table_df["Link"].notna())]
                 accepted_records = len(filtered_df['Link'].tolist())
                 df.at[index, 'REKORDY ZAAKCEPTOWANE'] = accepted_records
+                break  # sukces, wychodzimy z pętli retry
+
+            except gspread.exceptions.WorksheetNotFound:
+                print(f"Wiersz {index}: brak zakładki 'Posts' w arkuszu {gsheetId}")
+                df.at[index, 'REKORDY ZAAKCEPTOWANE'] = 0
                 break
-            except requests.exceptions.RequestException as e:
-                print(f"Błąd połączenia dla wiersza {index}: {e}")
-                retries += 1
-                wait_time = backoff_factor ** retries
-                time.sleep(wait_time)
-            except Exception as e:
-                if "503" in str(e):
-                    print(f"Wiersz {index}: 503 – serwis niedostępny, retry {retries + 1}")
+
+            except KeyError as e:
+                print(f"Wiersz {index}: brak kolumny {e} w arkuszu {gsheetId}")
+                df.at[index, 'REKORDY ZAAKCEPTOWANE'] = 0
+                break
+
+            except gspread.exceptions.APIError as e:
+                msg = str(e)
+                if "503" in msg or "429" in msg:
                     retries += 1
-                    time.sleep(backoff_factor ** retries)
+                    wait_time = backoff_factor ** retries
+                    print(f"Wiersz {index}: APIError {msg[:50]}..., retry {retries} w {wait_time}s")
+                    time.sleep(wait_time)
                 else:
-                    print(f"Błąd ogólny dla wiersza {index} (link: {link}): {e}")
+                    print(f"Wiersz {index}: APIError (inne): {msg}")
                     df.at[index, 'REKORDY ZAAKCEPTOWANE'] = 0
                     break
+
+            except AttributeError:
+                print(f"Wiersz {index}: nie udało się wyciągnąć gsheetId z linku {link}")
+                df.at[index, 'REKORDY ZAAKCEPTOWANE'] = 0
+                break
+
+            except Exception as e:
+                print(f"Wiersz {index}: inny wyjątek ({type(e).__name__}): {e}")
+                df.at[index, 'REKORDY ZAAKCEPTOWANE'] = 0
+                break
+
         else:
             df.at[index, 'REKORDY ZAAKCEPTOWANE'] = "Błąd po wielu próbach"
 
-        # ⏱️ Dodajemy pauzę po każdej iteracji
+        # Pauza między kolejnymi iteracjami
         time.sleep(2)
+
     return df
+
+
+
+
+
+# def update_rekordy_zaakceptowane(df, max_retries=3, backoff_factor=2):
+#     for index, row in tqdm(df.iterrows()):
+#         link = row['LINK']
+#         name = row['LINK DO STRONY']
+        
+#         if pd.isna(link):
+#             print(f"Wiersz {index}: brak linka dla strony {name} – wpisano 0")
+#             df.at[index, 'REKORDY ZAAKCEPTOWANE'] = 0
+#             continue
+        
+#         retries = 0
+#         while retries < max_retries:
+#             try:
+#                 gsheetId = re.search('(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link).group(0)
+#                 table_df = gsheet_to_df(gsheetId, 'Posts')
+#                 filtered_df = table_df[(table_df['do PBL'] == 'True') & (table_df["Link"].notna())]
+#                 accepted_records = len(filtered_df['Link'].tolist())
+#                 df.at[index, 'REKORDY ZAAKCEPTOWANE'] = accepted_records
+#                 break
+#             except requests.exceptions.RequestException as e:
+#                 print(f"Błąd połączenia dla wiersza {index}: {e}")
+#                 retries += 1
+#                 wait_time = backoff_factor ** retries
+#                 time.sleep(wait_time)
+#             except Exception as e:
+#                 if "503" in str(e):
+#                     print(f"Wiersz {index}: 503 – serwis niedostępny, retry {retries + 1}")
+#                     retries += 1
+#                     time.sleep(backoff_factor ** retries)
+#                 else:
+#                     print(f"Błąd ogólny dla wiersza {index} (link: {link}): {e}")
+#                     df.at[index, 'REKORDY ZAAKCEPTOWANE'] = 0
+#                     break
+#         else:
+#             df.at[index, 'REKORDY ZAAKCEPTOWANE'] = "Błąd po wielu próbach"
+
+#         # ⏱️ Dodajemy pauzę po każdej iteracji
+#         time.sleep(2)
+#     return df
 
 
 def update_zakres_dat_w_zrodle(df):
