@@ -288,6 +288,8 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 # magazynsuburbia = 'https://docs.google.com/spreadsheets/d/18HUy1Vb4JBuPo5kGfuSGI8TsGJfUvzVn4JVwcY-ftbU/edit?gid=652340147#gid=652340147'
 # czas_kultury = 'https://docs.google.com/spreadsheets/d/1T6JHJxlZJtAhUpYNS37CTbRmRN5Q4-_YYD6GXa2MADc/edit?gid=252367651#gid=252367651'
 # magazyn_wizje = 'https://docs.google.com/document/d/1l3hsqJ9kXF_EzSP__ZYM2qFnwmdfykyyoKHpz01OKA0/edit?hl=pl&forcehl=1&tab=t.0'
+#kulturaupodstaw = 'https://docs.google.com/spreadsheets/d/1E6KaNzLOrK7NFc4YWwDNUbeM9JyBygXHmzusX0V_Sn4/edit?gid=652340147#gid=652340147'
+
 
 #NIE ROBIĆ: 
 #rozdzielczosc_chleba - brak autorów
@@ -295,7 +297,7 @@ def update_viaf_columns(link, list_of_columns): #Pierwszy element listy to zawsz
 
 
 #%% main
-link = 'https://docs.google.com/spreadsheets/d/12tKrefcwoaOcfcEgGne8PJPu6eW9sXUy3EG4eWj--wA/edit?gid=652340147#gid=652340147'
+link = 'https://docs.google.com/spreadsheets/d/1E6KaNzLOrK7NFc4YWwDNUbeM9JyBygXHmzusX0V_Sn4/edit?gid=652340147#gid=652340147'
 
 updated_authors = list_of_authors_from_table(link)                
 
@@ -323,7 +325,7 @@ with ThreadPoolExecutor() as excecutor:
 
 df = update_viaf_columns(link, ['Autor'])
 
-with pd.ExcelWriter(r"data\\viafowanie\\magazynwizje_2024-06-07.xlsx", engine='xlsxwriter') as writer:    
+with pd.ExcelWriter(r"data\\viafowanie\\kulturaupodstaw_2025-08-22.xlsx", engine='xlsxwriter') as writer:    
     df.to_excel(writer, 'Posts', index=False)   
 
    
