@@ -386,50 +386,50 @@ print("\n".join(lines))
 #%%
 #Poniej próba poprawy kodu (bo jest rozbieznosc w sumie zapisów wg tego kodu i kodu generujacego cotygodniowe statystyki)
 # Funkcja do pobrania danych z arkusza Google (z Twojego kodu)
-def gsheet_to_df(gsheetId, worksheet):
-    sheet = gc.open_by_key(gsheetId)
-    df = get_as_dataframe(sheet.worksheet(worksheet), evaluate_formulas=True, dtype=str).dropna(how='all').dropna(how='all', axis=1)
-    return df
+# def gsheet_to_df(gsheetId, worksheet):
+#     sheet = gc.open_by_key(gsheetId)
+#     df = get_as_dataframe(sheet.worksheet(worksheet), evaluate_formulas=True, dtype=str).dropna(how='all').dropna(how='all', axis=1)
+#     return df
 
-# Pobranie wszystkich linków z tabeli manualnych
-links = final_df_only_manual['LINK'].dropna().unique()
+# # Pobranie wszystkich linków z tabeli manualnych
+# links = final_df_only_manual['LINK'].dropna().unique()
 
-# Lista do wyników
-results = []
+# # Lista do wyników
+# results = []
 
-for link in tqdm(links):
-    try:
-        gsheetId_match = re.search(r'(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link)
-        if gsheetId_match is None:
-            results.append((link, "Niepoprawny link", 0))
-            continue
+# for link in tqdm(links):
+#     try:
+#         gsheetId_match = re.search(r'(?<=https:\/\/docs\.google\.com\/spreadsheets\/d\/)[A-Za-z\d\_\-]*', link)
+#         if gsheetId_match is None:
+#             results.append((link, "Niepoprawny link", 0))
+#             continue
         
-        gsheetId = gsheetId_match.group(0)
-        table_df = gsheet_to_df(gsheetId, 'Posts')
-        total_records = len(table_df)
+#         gsheetId = gsheetId_match.group(0)
+#         table_df = gsheet_to_df(gsheetId, 'Posts')
+#         total_records = len(table_df)
         
-        # Sprawdzenie liczby rekordów, które mają 'do PBL' i 'Link'
-        records_with_link = table_df['Link'].notna().sum() if 'Link' in table_df.columns else 0
-        records_do_pbl = table_df['do PBL'].notna().sum() if 'do PBL' in table_df.columns else 0
+#         # Sprawdzenie liczby rekordów, które mają 'do PBL' i 'Link'
+#         records_with_link = table_df['Link'].notna().sum() if 'Link' in table_df.columns else 0
+#         records_do_pbl = table_df['do PBL'].notna().sum() if 'do PBL' in table_df.columns else 0
 
-        results.append((link, total_records, records_with_link, records_do_pbl))
+#         results.append((link, total_records, records_with_link, records_do_pbl))
 
-    except Exception as e:
-        results.append((link, f"Błąd: {e}", 0, 0))
+#     except Exception as e:
+#         results.append((link, f"Błąd: {e}", 0, 0))
 
-# Zamiana na DataFrame dla łatwego przeglądu
-results_df = pd.DataFrame(results, columns=['LINK', 'Total_records', 'Records_with_Link', 'Records_do_PBL'])
-results_df.sort_values(by='Total_records', ascending=False, inplace=True)
+# # Zamiana na DataFrame dla łatwego przeglądu
+# results_df = pd.DataFrame(results, columns=['LINK', 'Total_records', 'Records_with_Link', 'Records_do_PBL'])
+# results_df.sort_values(by='Total_records', ascending=False, inplace=True)
 
-# Wyświetlenie tabeli
-for col in ['Total_records', 'Records_with_Link', 'Records_do_PBL']:
-    results_df[col] = pd.to_numeric(results_df[col], errors='coerce')
+# # Wyświetlenie tabeli
+# for col in ['Total_records', 'Records_with_Link', 'Records_do_PBL']:
+#     results_df[col] = pd.to_numeric(results_df[col], errors='coerce')
 
-# Sortowanie już bez błędów
-results_df.sort_values(by='Total_records', ascending=False, inplace=True)
+# # Sortowanie już bez błędów
+# results_df.sort_values(by='Total_records', ascending=False, inplace=True)
 
-# Wyświetlenie
-print(results_df)
+# # Wyświetlenie
+# print(results_df)
 
 
 # Przygotowanie danych do DataFrame 
